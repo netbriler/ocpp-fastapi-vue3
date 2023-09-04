@@ -1,0 +1,85 @@
+version: "3.0"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.12.0-management
+    restart: always
+    container_name: csms-rabbitmq
+    env_file:
+      - .env
+    ports:
+      - "${RABBITMQ_PORT}:${RABBITMQ_PORT}"
+      - "${RABBITMQ_UI_PORT}:${RABBITMQ_UI_PORT}"
+    environment:
+      RABBITMQ_DEFAULT_USER: "${RABBITMQ_USER}"
+      RABBITMQ_DEFAULT_PASS: "${RABBITMQ_PASS}"
+    healthcheck:
+      test: "exit 0"
+
+  db:
+    image: postgres:15.3-bullseye
+    restart: always
+    container_name: csms-db
+    volumes:
+      - ./data/postgres:/data
+    env_file:
+      - .env
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    environment:
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_DB: "${DB_NAME}"
+      PGDATA: "/data"
+    healthcheck:
+      test: "exit 0"
+
+  manager:
+    container_name: csms-manager
+    build: .
+    volumes:
+      - ./backend/src:/usr/src/csms/backend
+    env_file:
+      - .env
+    ports:
+      - "${HTTP_SERVER_PORT}:${HTTP_SERVER_PORT}"
+    restart: always
+    command: >
+      sh -c "cd backend && alembic upgrade head &&
+             uvicorn manager.main:app --host 0.0.0.0 --port ${HTTP_SERVER_PORT} --reload"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+
+  charge_point_node:
+    container_name: charge_point_node
+    restart: always
+    build: .
+    volumes:
+      - ./backend/src:/usr/src/csms/backend
+    ports:
+      - "${WS_SERVER_PORT}:${WS_SERVER_PORT}"
+    env_file:
+      - .env
+    command: > 
+      sh -c "cd backend && watchmedo auto-restart --pattern '*.py' --recursive --signal SIGTERM python charge_point_node/main.py"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  frontend:
+    container_name: frontend
+    restart: always
+    build: .
+    volumes:
+      - ./frontend:/usr/src/csms/frontend
+    ports:
+      - "${UI_PORT}:${UI_PORT}"
+    env_file:
+      - .env
+    command: >
+      sh -c "cd frontend && yarn install && yarn dev --port "${UI_PORT}" --host 0.0.0.0"
+
+
