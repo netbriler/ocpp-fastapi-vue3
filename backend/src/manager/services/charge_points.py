@@ -13,6 +13,8 @@ from core.database import get_contextual_session
 from manager.models import ChargePoint
 from manager.views.charge_points import CreateChargPointView
 
+from backend.src.manager.exceptions import NotFound
+
 
 async def build_charge_points_query(account: models.Account, search: str) -> selectable:
     criterias = [
@@ -36,7 +38,9 @@ async def build_charge_points_query(account: models.Account, search: str) -> sel
 
 async def get_charge_point(session, charge_point_id) -> ChargePoint | None:
     result = await session.execute(select(ChargePoint).where(ChargePoint.id == charge_point_id))
-    return result.scalars().first()
+    charge_point = result.scalars().first()
+    if not charge_point:
+        raise NotFound
 
 
 async def create_charge_point(session, data: CreateChargPointView):
