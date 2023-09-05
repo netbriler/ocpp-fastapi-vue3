@@ -62,25 +62,22 @@ class OCPPWebSocketServerProtocol(WebSocketServerProtocol):
 
         return password
 
-    async def process_request(self, path, headers: Headers):
+    async def _process_request(self, path, headers: Headers):
         """
         An implementation of the OCPP Security profile (Basic HTTP Auth)
         :param path:
         :param headers:
         :return:
         """
-        self.charge_point_id = await self.extract_charge_point_id(path)
-        # Do not authenticate during developing
-        if DEBUG:
-            return
+        charge_point_id = await self.extract_charge_point_id(path)
 
-        password = await self._extract_password(self.charge_point_id, headers)
+        password = await self._extract_password(charge_point_id, headers)
 
         if not password:
             response_status = HTTPStatus.UNAUTHORIZED
         else:
             response = await api_client.post(
-                f"charge_points/{self.charge_point_id}",
+                f"charge_points/{charge_point_id}",
                 data=ChargePointAuthView(password=password)
             )
             response_status = HTTPStatus(response.status_code)

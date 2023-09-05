@@ -5,6 +5,7 @@ from typing import Callable
 from loguru import logger
 from ocpp.v201.enums import Action
 
+import manager.services.charge_points as service
 from charge_point_node.models.base import BaseEvent
 from charge_point_node.models.boot_notification import BootNotificationEvent
 from charge_point_node.models.heartbeat import HeartbeatEvent
@@ -17,6 +18,7 @@ from manager.services.heartbeat import process_heartbeat
 from manager.utils import release_lock
 from manager.views.charge_points import ChargePointUpdateStatusView
 from sse import sse_publisher
+from core.database import get_contextual_session
 
 
 def prepare_event(func) -> Callable:
@@ -35,8 +37,16 @@ def prepare_event(func) -> Callable:
 
 @prepare_event
 @sse_publisher.publish
-async def process_event(event: BaseEvent) -> BaseEvent:
+async def process_event(event: BaseEvent) -> BaseEvent | None:
     logger.info(f"Got event from charge point node (event={event})")
+
+    # Do nothing if the charge point was not recognized
+    async with get_contextual_session() as session:
+        if not await service.get_charge_point(
+            session,
+            event.charge_point_id
+        ):
+            return
 
     payload = None
     task = None

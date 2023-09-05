@@ -51,9 +51,10 @@ class Publisher:
                         session,
                         event.charge_point_id
                     )
-                    for observer in self.observers:
-                        if charge_point.location.account.id == observer.account.id:
-                            await self.notify_observer(observer, event)
+                    if charge_point:
+                        for observer in self.observers:
+                            if charge_point.location.account.id == observer.account.id:
+                                await self.notify_observer(observer, event)
 
         return wrapper
 

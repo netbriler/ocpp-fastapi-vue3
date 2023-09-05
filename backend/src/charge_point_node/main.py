@@ -45,7 +45,7 @@ async def watch(connection: OCPPWebSocketServerProtocol):
 
 
 async def on_connect(connection: OCPPWebSocketServerProtocol, path: str):
-    charge_point_id = connection.charge_point_id
+    charge_point_id = await connection.extract_charge_point_id(path)
     logger.info(f"New charge point connected (charge_point_id={charge_point_id})")
     event = OnConnectionEvent(charge_point_id=charge_point_id)
     await publish(event.json(), to=event.target_queue, priority=event.priority)

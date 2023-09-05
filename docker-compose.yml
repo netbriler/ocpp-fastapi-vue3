@@ -52,6 +52,8 @@ services:
         condition: service_healthy
       db:
         condition: service_healthy
+    healthcheck:
+      test: "exit 0"
 
   charge_point_node:
     container_name: charge_point_node
@@ -76,10 +78,22 @@ services:
     volumes:
       - ./frontend:/usr/src/csms/frontend
     ports:
-      - "${UI_PORT}:${UI_PORT}"
+      - "${UI_SERVER_PORT}:${UI_SERVER_PORT}"
     env_file:
       - .env
     command: >
-      sh -c "cd frontend && yarn install && yarn dev --port "${UI_PORT}" --host 0.0.0.0"
+      sh -c "cd frontend && yarn install && yarn dev --port "${UI_SERVER_PORT}" --host 0.0.0.0"
+    depends_on:
+      manager:
+        condition: service_healthy
+
+  nginx:
+      image: nginx:1.24.0-bullseye
+      ports:
+        - "80:80"
+      volumes:
+        - ./conf:/etc/nginx/conf.d
+      depends_on:
+        - frontend
 
 
