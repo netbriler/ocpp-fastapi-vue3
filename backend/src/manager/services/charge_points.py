@@ -27,7 +27,7 @@ async def build_charge_points_query(account: models.Account, search: str) -> sel
     if search:
         query = query.where(or_(
             func.lower(ChargePoint.id).contains(func.lower(search)),
-            func.cast(ChargePoint.status, String).ilike(f"%{search}%"),
+            func.cast(ChargePoint.status, String).ilike(f"{search}%"),
             func.lower(ChargePoint.model).contains(func.lower(search)),
             func.lower(models.Location.address1).contains(func.lower(search)))
         )
