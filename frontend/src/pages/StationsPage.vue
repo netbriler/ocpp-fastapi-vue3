@@ -189,7 +189,7 @@ const { currentPage, lastPage, fetchData, items, search } = usePagination({
 const { fetchCounters } = useCountersStore();
 
 const isDeleteAllowed = (station) => {
-  return station.columns.status === STATION_STATUS.offline;
+  return station.columns.status === STATION_STATUS.unavailable;
 };
 
 const clearError = () => {

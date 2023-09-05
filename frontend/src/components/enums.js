@@ -8,14 +8,12 @@ export const EVENT_NAMES = {
 
 export const STATION_STATUS = {
   available: "available",
-  offline: "offline",
-  reserved: "reserved",
-  charging: "charging",
+  unavailable: "unavailable",
+  faulted: "faulted",
 };
 
 export const STATION_STATUS_COLOR = {
-  available: "orange",
+  available: "#66DA26",
   offline: "#cfd2ce",
-  reserved: "#2edbfa",
-  charging: "#66DA26",
+  faulted: "#DC184CFF",
 };

@@ -46,10 +46,10 @@ class ChargePoint(Model):
 
     id = Column(String, primary_key=True, nullable=False)
     description = Column(String(48), nullable=True)
-    status = Column(Enum(ChargePointStatus), default=ChargePointStatus.OFFLINE, index=True)
-    manufacturer = Column(String, nullable=True)
+    status = Column(Enum(ChargePointStatus), default=ChargePointStatus.UNAVAILABLE, index=True)
+    manufacturer = Column(String, nullable=False)
     latitude = Column(Numeric, nullable=True)
-    longitude = Column(Numeric, nullable=False)
+    longitude = Column(Numeric, nullable=True)
     serial_number = Column(String, nullable=False, unique=True)
     comment = Column(String, nullable=True)
     model = Column(String, nullable=False)

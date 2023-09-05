@@ -63,7 +63,7 @@ async def process_event(event: BaseEvent) -> BaseEvent | None:
     ]:
         payload = ChargePointUpdateStatusView(status=ChargePointStatus.AVAILABLE)
     if event.action is ActionName.LOST_CONNECTION:
-        payload = ChargePointUpdateStatusView(status=ChargePointStatus.OFFLINE)
+        payload = ChargePointUpdateStatusView(status=ChargePointStatus.UNAVAILABLE)
 
     if payload:
         await update_charge_point(charge_point_id=event.charge_point_id, data=payload)
