@@ -13,7 +13,7 @@ export const STATION_STATUS = {
 };
 
 export const STATION_STATUS_COLOR = {
-  available: "#66DA26",
-  offline: "#cfd2ce",
+  available: "#0ee018",
+  offline: "#e5e8e3",
   faulted: "#DC184CFF",
 };

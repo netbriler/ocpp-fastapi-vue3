@@ -33,7 +33,7 @@
     </template>
     <template v-slot:item.status="{ item }">
       <v-chip :color="STATION_STATUS_COLOR[item.columns.status]">
-        {{ item.columns.status }}
+        <p class="text-medium-emphasis">{{ item.columns.status }}</p>
       </v-chip>
     </template>
     <template v-slot:item.action="{ item }">
