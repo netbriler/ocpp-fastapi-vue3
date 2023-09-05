@@ -254,7 +254,7 @@ const headers = [
     key: "status",
     align: "center",
     sortable: false,
-    width: "10%",
+    width: "12%",
   },
   {
     title: "Location",
