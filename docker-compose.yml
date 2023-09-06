@@ -41,8 +41,6 @@ services:
       - ./backend/src:/usr/src/csms/backend
     env_file:
       - .env
-    ports:
-      - "${HTTP_SERVER_PORT}:${HTTP_SERVER_PORT}"
     restart: always
     command: >
       sh -c "cd backend && alembic upgrade head &&
@@ -77,8 +75,6 @@ services:
     build: .
     volumes:
       - ./frontend:/usr/src/csms/frontend
-    ports:
-      - "${UI_SERVER_PORT}:${UI_SERVER_PORT}"
     env_file:
       - .env
     command: >
