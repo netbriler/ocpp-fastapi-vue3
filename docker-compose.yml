@@ -79,7 +79,7 @@ services:
     env_file:
       - .env
     command: >
-      sh -c "cd frontend && yarn install && yarn dev --port "${UI_SERVER_PORT}""
+      sh -c "cd frontend && yarn install && yarn dev --port "${UI_SERVER_PORT}" --host 127.0.0.1"
     depends_on:
       manager:
         condition: service_healthy
