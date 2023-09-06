@@ -41,7 +41,7 @@ services:
     container_name: csms-manager
     build: .
     volumes:
-      - ./backend/src:/usr/src/csms/backend
+      - ./backend:/usr/src/csms/backend
     ports:
       - "${HTTP_SERVER_PORT}:${HTTP_SERVER_PORT}"
     env_file:
@@ -65,7 +65,7 @@ services:
     restart: always
     build: .
     volumes:
-      - ./backend/src:/usr/src/csms/backend
+      - ./backend:/usr/src/csms/backend
     ports:
       - "${WS_SERVER_PORT}:${WS_SERVER_PORT}"
     env_file:

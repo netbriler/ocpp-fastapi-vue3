@@ -7,7 +7,7 @@ RUN mkdir -p /usr/src/csms/frontend
 
 WORKDIR /usr/src/csms
 
-COPY backend/src /usr/src/csms/backend
+COPY backend /usr/src/csms/backend
 COPY frontend /usr/src/csms/frontend
 
 ENV PYTHONPATH=/usr/src/csms/backend
