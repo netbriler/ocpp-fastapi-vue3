@@ -29,16 +29,6 @@
     -  "manager" prepares "task" and puts it into the queue
     -  "charge point node" consumes "task" and executes the one (sends data to the physical charging station)
 
-### Requirements:
-
-    docker
-
-### Deployment
-
-- ```$ docker login```
-- ```$ sh deploy.sh```
-- This is it ...
-
 
 ![Screenshot](https://github.com/heroyooki/ocpp-csms/assets/17108549/4ab76f0c-07b4-4d7d-a7a3-06573bfc2199)
 
