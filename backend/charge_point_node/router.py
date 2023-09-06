@@ -21,7 +21,7 @@ class Router:
             handlers = self._route_map[msg.action]
         except KeyError:
             raise NotSupportedError(
-                details={"cause": f"No handler for {msg.action} registered."}
+                details={"cause": f"No handler for {msg.action} registered (msg={msg.to_json()})."}
             )
 
         if not handlers.get("_skip_schema_validation", False):
