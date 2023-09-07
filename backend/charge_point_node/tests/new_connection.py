@@ -10,7 +10,6 @@ from ocpp.charge_point import snake_to_camel_case, camel_to_snake_case
 from ocpp.v16.call import (
     BootNotificationPayload as CallBootNotificationPayload,
     StatusNotificationPayload as CallStatusNotificationPayload,
-    HeartbeatPayload as CallHeartbeatPayload
 )
 from ocpp.v16.call_result import (
     BootNotificationPayload as CallResultBootNotificationPayload,
