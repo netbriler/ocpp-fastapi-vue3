@@ -25,12 +25,13 @@ from manager.services.charge_points import get_charge_point
 from manager.views.charge_points import ConnectorView
 
 charge_point_id = "test"
-url = f"ws://localhost:{settings.WS_SERVER_PORT}/{charge_point_id}"
+host = "localhost"
+url = f"ws://{host}:{settings.WS_SERVER_PORT}/{charge_point_id}"
 
 
 async def test_unrecognized_charge_point():
     try:
-        await websockets.connect(f"ws://localhost:{settings.WS_SERVER_PORT}/unrecognized")
+        await websockets.connect(f"ws://{host}:{settings.WS_SERVER_PORT}/unrecognized")
         raise Exception
     except InvalidStatusCode as exc:
         assert HTTPStatus(exc.status_code) is HTTPStatus.UNAUTHORIZED
