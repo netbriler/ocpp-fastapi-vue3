@@ -1,4 +1,4 @@
-from ocpp.v201.enums import Action
+from ocpp.v16.enums import Action
 
 from manager.models.tasks.base import BaseTask
 

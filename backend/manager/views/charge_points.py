@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List
+from typing import List, Dict
 
 from pydantic import BaseModel
 from ocpp.v16.enums import ChargePointStatus
@@ -10,8 +10,13 @@ from manager.views import PaginationView
 from manager.views.locations import SimpleLocation
 
 
+class ConnectorView(BaseModel):
+    status: ChargePointStatus
+
+
 class ChargePointUpdateStatusView(BaseModel):
     status: ChargePointStatus
+    connectors: Dict | None = None
 
 
 class StatusCount(BaseModel):

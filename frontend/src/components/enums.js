@@ -1,7 +1,7 @@
 export const DATETIME_FORMAT = "MMM DD, YYYY, hh:mm A";
 
 export const EVENT_NAMES = {
-  new_connection: "new_connection",
+  status_notification: "StatusNotification",
   lost_connection: "lost_connection",
   heartbeat: "Heartbeat",
 };
@@ -14,6 +14,6 @@ export const STATION_STATUS = {
 
 export const STATION_STATUS_COLOR = {
   available: "#0ee018",
-  offline: "#e5e8e3",
+  unavailable: "#7e817d",
   faulted: "#DC184CFF",
 };

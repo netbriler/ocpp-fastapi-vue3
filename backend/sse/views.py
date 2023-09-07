@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ocpp.v201.enums import Action
+from ocpp.v16.enums import Action
 from pydantic import BaseModel
 
 import manager.services.charge_points as service
@@ -17,6 +17,9 @@ class ConnectionMetaData(BaseModel):
 class HearbeatMetadata(BaseModel):
     pass
 
+
+class StatusNotificationMetadata(BaseModel):
+    pass
 
 class SSEventData(BaseModel):
     charge_point_id: str
@@ -37,11 +40,13 @@ class Redactor:
             name=event.action
         )
         # Note: there is a list ALLOWED_SERVER_SIDE_EVENTS in the settings
-        if event.action in [ConnectionStatus.NEW_CONNECTION, ConnectionStatus.LOST_CONNECTION]:
+        if event.action in [ConnectionStatus.LOST_CONNECTION]:
             async with get_contextual_session() as session:
                 data.meta = ConnectionMetaData(
                     count=StatusCount(**await service.get_statuses_counts(session, account_id))
                 ).dict()
+        if event.action in [Action.StatusNotification] and event.payload.connector_id == 0:
+            data.meta = StatusNotificationMetadata().dict()
         if event.action in [Action.Heartbeat]:
             data.meta = HearbeatMetadata().dict()
 

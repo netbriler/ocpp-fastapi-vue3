@@ -3,16 +3,26 @@ from __future__ import annotations
 import asyncio
 from typing import Dict
 
+from ocpp.v16.enums import ChargePointStatus
 from loguru import logger
 from passlib.hash import pbkdf2_sha256 as sha256
 from sqlalchemy import select, update, text, func, or_, String
 from sqlalchemy.sql import selectable
 
 import manager.models as models
-from core.database import get_contextual_session
+from charge_point_node.models.status_notification import StatusNotificationEvent
 from manager.models import ChargePoint
-from manager.views.charge_points import CreateChargPointView
+from manager.views.charge_points import CreateChargPointView, ConnectorView
 
+
+async def update_connectors(session, event: StatusNotificationEvent) -> Dict:
+    payload = event.payload
+    charge_point = await get_charge_point(session, event.charge_point_id)
+    if payload.connector_id == 1:
+        charge_point.connectors = {payload.connector_id: ConnectorView(status=payload.status).dict()}
+    if payload.connector_id > 1:
+        charge_point.connectors[payload.connector_id] = ConnectorView(status=payload.status).dict()
+    session.add(charge_point)
 
 async def build_charge_points_query(account: models.Account, search: str) -> selectable:
     criterias = [
@@ -47,17 +57,15 @@ async def create_charge_point(session, data: CreateChargPointView):
 
 
 async def update_charge_point(
+        session,
         charge_point_id: str,
         data
 ) -> None:
     logger.info((f"Start process update charge point status "
                  f"(charge_point_id={charge_point_id}, data={data})"))
-    async with get_contextual_session() as session:
-        await session.execute(update(ChargePoint) \
-                              .where(ChargePoint.id == charge_point_id) \
-                              .values(**data.dict(exclude_unset=True)))
-        await session.commit()
-
+    await session.execute(update(ChargePoint) \
+                          .where(ChargePoint.id == charge_point_id) \
+                          .values(**data.dict(exclude_unset=True)))
 
 async def get_statuses_counts(session, account_id: str) -> Dict:
     """

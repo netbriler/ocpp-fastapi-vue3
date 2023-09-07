@@ -12,6 +12,7 @@ from core.fields import ConnectionStatus
 from manager.models.tasks.base import BaseTask
 from manager.models.tasks.boot_notification import BootNotificationTask
 from manager.models.tasks.heartbeat import HeartbeatTask
+from manager.models.tasks.status_notification import StatusNotificationTask
 
 router = Router()
 
@@ -20,6 +21,7 @@ def prepare_task(func) -> Callable:
     @wraps(func)
     async def wrapper(data, *args, **kwargs):
         task = {
+            Action.StatusNotification: StatusNotificationTask,
             Action.BootNotification: BootNotificationTask,
             Action.Heartbeat: HeartbeatTask
         }[data["action"]](**data)

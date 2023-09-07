@@ -32,8 +32,10 @@
       </v-row>
     </template>
     <template v-slot:item.status="{ item }">
-      <v-chip :color="STATION_STATUS_COLOR[item.columns.status]">
-        <p class="text-medium-emphasis">{{ item.columns.status }}</p>
+      <v-chip :color="STATION_STATUS_COLOR[item.columns.status.toLowerCase()]">
+        <p class="text-medium-emphasis">
+          {{ item.columns.status }}
+        </p>
       </v-chip>
     </template>
     <template v-slot:item.action="{ item }">
@@ -170,7 +172,11 @@ import DataTable from "@/components/DataTable";
 import { rules } from "@/configs/validation";
 import { listSimpleLocations } from "@/services/locations";
 
-import { STATION_STATUS, STATION_STATUS_COLOR } from "@/components/enums";
+import {
+  EVENT_NAMES,
+  STATION_STATUS,
+  STATION_STATUS_COLOR,
+} from "@/components/enums";
 import { usePagination } from "@/use/pagination";
 import { listStations, addStation, deleteStation } from "@/services/stations";
 import { useCountersStore } from "@/store/counters";
@@ -291,7 +297,7 @@ const refreshStation = (id) => {
 
 const processSSE = (event) => {
   console.log(`Start process event for stations (event=${event.name}.)`);
-  if (event.name === "Heartbeat") {
+  if (event.name === EVENT_NAMES.heartbeat) {
     refreshStation(event.charge_point_id);
   } else {
     fetchData();
