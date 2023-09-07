@@ -45,7 +45,7 @@ class Redactor:
                 data.meta = ConnectionMetaData(
                     count=StatusCount(**await service.get_statuses_counts(session, account_id))
                 ).dict()
-        if event.action in [Action.StatusNotification] and event.payload.connector_id == 0:
+        if event.action in [Action.StatusNotification]:
             data.meta = StatusNotificationMetadata().dict()
         if event.action in [Action.Heartbeat]:
             data.meta = HearbeatMetadata().dict()
