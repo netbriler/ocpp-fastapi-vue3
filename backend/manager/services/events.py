@@ -7,16 +7,18 @@ from loguru import logger
 from ocpp.v16.enums import Action, ChargePointStatus
 
 from charge_point_node.models.base import BaseEvent
+from charge_point_node.models.security_event_notification import SecurityEventNotificationEvent
 from charge_point_node.models.status_notification import StatusNotificationEvent
 from charge_point_node.models.boot_notification import BootNotificationEvent
 from charge_point_node.models.heartbeat import HeartbeatEvent
-from charge_point_node.models.on_connection import OnConnectionEvent, LostConnectionEvent
+from charge_point_node.models.on_connection import LostConnectionEvent
 from core.database import get_contextual_session
 from core.fields import ConnectionStatus
 from core.queue.publisher import publish
 from manager.services.boot_notification import process_boot_notification
 from manager.services.charge_points import update_charge_point, update_connectors
 from manager.services.heartbeat import process_heartbeat
+from manager.services.security_event_notification import process_security_event_notification
 from manager.services.status_notification import process_status_notification
 from manager.views.charge_points import ChargePointUpdateStatusView
 from sse import sse_publisher
@@ -29,7 +31,8 @@ def prepare_event(func) -> Callable:
             ConnectionStatus.LOST_CONNECTION: LostConnectionEvent,
             Action.StatusNotification: StatusNotificationEvent,
             Action.BootNotification: BootNotificationEvent,
-            Action.Heartbeat: HeartbeatEvent
+            Action.Heartbeat: HeartbeatEvent,
+            Action.SecurityEventNotification: SecurityEventNotificationEvent
         }[data["action"]](**data)
         return await func(event)
 
@@ -42,7 +45,8 @@ async def process_event(event: Union[
     LostConnectionEvent,
     StatusNotificationEvent,
     BootNotificationEvent,
-    HeartbeatEvent
+    HeartbeatEvent,
+    SecurityEventNotificationEvent
 ]) -> BaseEvent | None:
     logger.info(f"Got event from charge point node (event={event})")
 
@@ -51,6 +55,8 @@ async def process_event(event: Union[
 
     async with get_contextual_session() as session:
 
+        if event.action is Action.SecurityEventNotification:
+            task = await process_security_event_notification(deepcopy(event))
         if event.action is Action.BootNotification:
             task = await process_boot_notification(deepcopy(event))
         if event.action is Action.StatusNotification:

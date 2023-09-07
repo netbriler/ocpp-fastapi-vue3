@@ -5,15 +5,17 @@ from uuid import uuid4
 import dataclasses
 from http import HTTPStatus
 
+import arrow
 from websockets.exceptions import InvalidStatusCode
 from ocpp.charge_point import snake_to_camel_case, camel_to_snake_case
 from ocpp.v16.call import (
     BootNotificationPayload as CallBootNotificationPayload,
     StatusNotificationPayload as CallStatusNotificationPayload,
+    SecurityEventNotificationPayload as CallSecurityEventNotificationPayload
 )
 from ocpp.v16.call_result import (
     BootNotificationPayload as CallResultBootNotificationPayload,
-    HeartbeatPayload as CallResultHeartbeatPayload
+    HeartbeatPayload as CallResultHeartbeatPayload,
 )
 from ocpp.v16.enums import Action, ChargePointErrorCode, ChargePointStatus
 
@@ -133,6 +135,27 @@ async def test_heartbeat(websocket):
     CallResultHeartbeatPayload(**camel_to_snake_case(data[2]))
 
 
+async def test_security_notification_event(websocket):
+    security_notification_payload = dataclasses.asdict(CallSecurityEventNotificationPayload(
+        type="test_event",
+        timestamp=arrow.get().isoformat(),
+        tech_info="test_info"
+    ))
+
+    message_id = str(uuid4())
+    await websocket.send(json.dumps([
+        2,
+        message_id,
+        Action.SecurityEventNotification.value,
+        snake_to_camel_case({k: v for k, v in security_notification_payload.items() if not v is None})
+    ]))
+
+    response = await websocket.recv()
+    data = json.loads(response)
+    assert data[0] == 3
+    assert data[1] == message_id
+
+
 async def test_new_connection():
     await test_unrecognized_charge_point()
     await asyncio.sleep(1)
@@ -153,6 +176,8 @@ async def test_new_connection():
         await test_status_notification(websocket)
         await asyncio.sleep(1)
         await test_heartbeat(websocket)
+        await asyncio.sleep(1)
+        await test_security_notification_event(websocket)
 
         await asyncio.sleep(5)
 
