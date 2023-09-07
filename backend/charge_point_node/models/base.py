@@ -15,4 +15,4 @@ class BaseEvent(BaseModel):
     priority: int = REGULAR_MESSAGE_PRIORITY
 
     def __str__(self):
-        return json.dumps({k: v for k, v in self.dict().items() if k != "password"})
+        return self.json()

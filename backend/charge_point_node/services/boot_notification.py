@@ -1,6 +1,7 @@
 from loguru import logger
-from ocpp.v201.call_result import BootNotificationPayload
-from ocpp.v201.enums import Action
+from ocpp.v16.call_result import BootNotificationPayload as CallResultBootNotificationPayload
+from ocpp.v16.call import BootNotificationPayload as CallBootNotificationPayload
+from ocpp.v16.enums import Action
 
 from charge_point_node.models.boot_notification import BootNotificationEvent
 from charge_point_node.router import Router
@@ -18,18 +19,20 @@ async def on_boot_notification(
 ):
     logger.info(f"Start accept boot notification "
                 f"(charge_point_id={charge_point_id}, "
-                f"message_id={message_id}).")
+                f"message_id={message_id},"
+                f"payload={kwargs}).")
     event = BootNotificationEvent(
         charge_point_id=charge_point_id,
-        message_id=message_id
+        message_id=message_id,
+        payload=CallBootNotificationPayload(**kwargs)
     )
     await publish(event.json(), to=event.target_queue, priority=event.priority)
 
 
 @router.out(Action.BootNotification)
-async def respond_boot_notification(task: BootNotificationTask) -> BootNotificationPayload:
+async def respond_boot_notification(task: BootNotificationTask) -> CallResultBootNotificationPayload:
     logger.info(f"Start respond boot notification task={task}).")
-    return BootNotificationPayload(
+    return CallResultBootNotificationPayload(
         current_time=task.current_time,
         interval=task.interval,
         status=task.status

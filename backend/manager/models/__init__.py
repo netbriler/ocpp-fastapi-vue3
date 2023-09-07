@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pydantic import BaseModel
-from sqlalchemy import Column, String, ForeignKey, Enum, Numeric
+from sqlalchemy import Column, String, ForeignKey, Enum, Numeric, JSON
 from sqlalchemy.orm import relationship
 from ocpp.v16.enums import ChargePointStatus
 
@@ -54,6 +54,7 @@ class ChargePoint(Model):
     comment = Column(String, nullable=True)
     model = Column(String, nullable=False)
     password = Column(String, nullable=True)
+    connectors = Column(JSON, default=dict())
 
     location_id = Column(String, ForeignKey("locations.id"), nullable=False)
     location = relationship("Location", back_populates="charge_points", lazy="joined")
