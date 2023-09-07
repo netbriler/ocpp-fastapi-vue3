@@ -4,6 +4,7 @@ from dataclasses import asdict
 from ocpp.charge_point import camel_to_snake_case, remove_nones, snake_to_camel_case
 from ocpp.exceptions import NotSupportedError
 from ocpp.messages import validate_payload, Call, CallResult
+from loguru import logger
 
 from charge_point_node.protocols import OCPPWebSocketServerProtocol
 from core import settings
@@ -17,6 +18,7 @@ class Router:
         self._ocpp_version = version
 
     async def handle_on(self, connection: OCPPWebSocketServerProtocol, msg: Call):
+        logger.info(f"Start handle on action (charge_point_id={connection.charge_point_id}, message={msg.to_json()})")
         try:
             handlers = self._route_map[msg.action]
         except KeyError:
@@ -39,6 +41,7 @@ class Router:
         await handler(msg.unique_id, connection.charge_point_id, **snake_case_payload)
 
     async def handle_out(self, connection, task: BaseTask):
+        logger.info(f"Start handle out action (charge_point_id={connection.charge_point_id}, task={task.dict()})")
         try:
             handlers = self._route_map[task.action]
         except KeyError:
