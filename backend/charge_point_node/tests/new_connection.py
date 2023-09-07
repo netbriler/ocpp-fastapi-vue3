@@ -139,6 +139,9 @@ async def test_new_connection():
 
     async with get_contextual_session() as session:
         charge_point = await get_charge_point(session, charge_point_id)
+        if not charge_point:
+            print(f"ERROR: Create charge point with id '{charge_point_id}', first.")
+            return
         charge_point.connectors = {}
         charge_point.status = ChargePointStatus.unavailable.value
         session.add(charge_point)
