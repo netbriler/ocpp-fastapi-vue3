@@ -3,9 +3,9 @@ from __future__ import annotations
 from pydantic import BaseModel
 from sqlalchemy import Column, String, ForeignKey, Enum, Numeric
 from sqlalchemy.orm import relationship
+from ocpp.v16.enums import ChargePointStatus
 
 from core.database import Model
-from core.fields import ChargePointStatus
 
 
 class Account(Model):
@@ -46,7 +46,7 @@ class ChargePoint(Model):
 
     id = Column(String, primary_key=True, nullable=False)
     description = Column(String(48), nullable=True)
-    status = Column(Enum(ChargePointStatus), default=ChargePointStatus.UNAVAILABLE, index=True)
+    status = Column(Enum(ChargePointStatus), default=ChargePointStatus.unavailable, index=True)
     manufacturer = Column(String, nullable=False)
     latitude = Column(Numeric, nullable=True)
     longitude = Column(Numeric, nullable=True)

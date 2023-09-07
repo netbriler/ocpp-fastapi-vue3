@@ -24,7 +24,7 @@ class ApiClient:
         endpoint = endpoint.lstrip('/')
         return f"{host}:{self.port}/{endpoint}"
 
-    async def post(self, endpoint: str, data: BaseModel):
+    async def post(self, endpoint: str, data=None):
         uri = self.get_uri(endpoint)
         async with self._client() as client:
-            return await client.post(uri, data=data.json())
+            return await client.post(uri, data=data)

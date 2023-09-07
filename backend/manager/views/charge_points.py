@@ -4,8 +4,8 @@ from datetime import datetime
 from typing import List
 
 from pydantic import BaseModel
+from ocpp.v16.enums import ChargePointStatus
 
-from core.fields import ChargePointStatus
 from manager.views import PaginationView
 from manager.views.locations import SimpleLocation
 

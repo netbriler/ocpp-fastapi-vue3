@@ -21,7 +21,7 @@ def upgrade() -> None:
                     sa.Column('id', sa.String(), nullable=False),
                     sa.Column('description', sa.String(length=48), nullable=True),
                     sa.Column('status',
-                              sa.Enum('AVAILABLE', 'UNAVAILABLE', 'FAULTED', name='chargepointstatus'),
+                              sa.Enum('available', 'unavailable', 'faulted', name='chargepointstatus'),
                               nullable=True),
                     sa.Column('location_id', sa.String(), nullable=False),
                     sa.Column('created_at', sa.DateTime(), nullable=True),

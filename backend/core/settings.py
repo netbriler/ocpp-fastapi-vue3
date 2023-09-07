@@ -5,7 +5,7 @@ import os
 from loguru import logger
 from ocpp.v201.enums import Action
 
-from core.fields import ActionName
+from core.fields import ConnectionStatus
 
 DEBUG = os.environ.get("DEBUG") == "1"
 
@@ -44,10 +44,10 @@ WS_SERVER_PORT = int(os.environ["WS_SERVER_PORT"])
 HTTP_SERVER_HOST = os.environ["HTTP_SERVER_HOST"]
 HTTP_SERVER_PORT = int(os.environ["HTTP_SERVER_PORT"])
 
-ALLOWED_SERVER_SIDE_EVENTS = [
-    ActionName.NEW_CONNECTION,
-    ActionName.LOST_CONNECTION,
-    Action.Heartbeat
+ALLOWED_SERVER_SENT_EVENTS = [
+    ConnectionStatus.LOST_CONNECTION,
+    Action.Heartbeat,
+    Action.StatusNotification
 ]
 
 DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss"

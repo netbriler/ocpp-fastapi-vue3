@@ -8,10 +8,9 @@ from ocpp.v201.enums import Action
 from websockets.legacy.server import WebSocketServer
 
 from charge_point_node.router import Router
-from core.fields import ActionName
+from core.fields import ConnectionStatus
 from manager.models.tasks.base import BaseTask
 from manager.models.tasks.boot_notification import BootNotificationTask
-from manager.models.tasks.connections import DisconnectTask
 from manager.models.tasks.heartbeat import HeartbeatTask
 
 router = Router()
@@ -21,7 +20,6 @@ def prepare_task(func) -> Callable:
     @wraps(func)
     async def wrapper(data, *args, **kwargs):
         task = {
-            ActionName.DISCONNECT: DisconnectTask,
             Action.BootNotification: BootNotificationTask,
             Action.Heartbeat: HeartbeatTask
         }[data["action"]](**data)
@@ -38,7 +36,7 @@ async def process_task(task: BaseTask, server: WebSocketServer) -> None:
         return
     connection = connections[0]
 
-    if task.action is ActionName.DISCONNECT:
+    if task.action is ConnectionStatus.DISCONNECT:
         await connection.close()
         return
 

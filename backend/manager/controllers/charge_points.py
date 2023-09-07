@@ -2,10 +2,10 @@ from typing import Tuple
 
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy import delete
+from loguru import logger
 
 from core.database import get_contextual_session
 from core.queue.publisher import publish
-from manager.auth.charge_points import is_relevant_password
 from manager.models import AuthData, Account, ChargePoint
 from manager.models.tasks.connections import DisconnectTask
 from manager.services.accounts import get_account
@@ -25,14 +25,11 @@ charge_points_router = APIRouter(
     "/charge_points/{charge_point_id}",
     status_code=status.HTTP_200_OK
 )
-async def authenticate(charge_point_id: str, data: AuthData):
+async def authenticate(charge_point_id: str, data: AuthData | None = None):
+    logger.info(f"Start authenticate charge point (id={charge_point_id})")
     async with get_contextual_session() as session:
         charge_point = await get_charge_point(session, charge_point_id)
-        if not charge_point \
-                or not await is_relevant_password(
-            data.password,
-            charge_point.password
-        ):
+        if not charge_point:
             raise HTTPException(status.HTTP_401_UNAUTHORIZED)
 
 

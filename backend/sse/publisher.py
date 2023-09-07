@@ -44,7 +44,7 @@ class Publisher:
         @wraps(func)
         async def wrapper(*args, **kwargs):
             event = await func(*args, **kwargs)
-            if event and event.action in settings.ALLOWED_SERVER_SIDE_EVENTS:
+            if event and event.action in settings.ALLOWED_SERVER_SENT_EVENTS:
                 logger.info(f"Start sending sse (event={event})")
                 async with get_contextual_session() as session:
                     charge_point = await service.get_charge_point(

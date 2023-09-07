@@ -1,13 +1,7 @@
 from enum import Enum
 
 
-class ActionName(str, Enum):
+class ConnectionStatus(str, Enum):
     NEW_CONNECTION = "new_connection"
     LOST_CONNECTION = "lost_connection"
     DISCONNECT = "disconnect"
-
-
-class ChargePointStatus(str, Enum):
-    AVAILABLE = "available"
-    UNAVAILABLE = "unavailable"
-    FAULTED = "faulted"
