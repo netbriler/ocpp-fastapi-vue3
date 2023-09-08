@@ -14,6 +14,7 @@ from charge_point_node.models.heartbeat import HeartbeatEvent
 from charge_point_node.models.on_connection import LostConnectionEvent
 from charge_point_node.models.authorize import AuthorizeEvent
 from charge_point_node.models.start_transaction import StartTransactionEvent
+from charge_point_node.models.stop_transaction import StopTransactionEvent
 from core.database import get_contextual_session
 from core.fields import ConnectionStatus
 from core.queue.publisher import publish
@@ -24,6 +25,7 @@ from manager.services.ocpp.security_event_notification import process_security_e
 from manager.services.ocpp.start_transaction import process_start_transaction
 from manager.services.ocpp.status_notification import process_status_notification
 from manager.services.ocpp.authorize import process_authorize
+from manager.services.ocpp.stop_transaction import process_stop_transaction
 from manager.views.charge_points import ChargePointUpdateStatusView
 from sse import sse_publisher
 
@@ -38,7 +40,8 @@ def prepare_event(func) -> Callable:
             Action.Heartbeat: HeartbeatEvent,
             Action.SecurityEventNotification: SecurityEventNotificationEvent,
             Action.Authorize: AuthorizeEvent,
-            Action.StartTransaction: StartTransactionEvent
+            Action.StartTransaction: StartTransactionEvent,
+            Action.StopTransaction: StopTransactionEvent
         }[data["action"]](**data)
         return await func(event)
 
@@ -54,7 +57,8 @@ async def process_event(event: Union[
     HeartbeatEvent,
     SecurityEventNotificationEvent,
     AuthorizeEvent,
-    StartTransactionEvent
+    StartTransactionEvent,
+    StopTransactionEvent
 ]) -> BaseEvent | None:
     logger.info(f"Got event from charge point node (event={event})")
 
@@ -62,6 +66,8 @@ async def process_event(event: Union[
 
     async with get_contextual_session() as session:
 
+        if event.action is StopTransactionEvent:
+            task = await process_stop_transaction(session, deepcopy(event))
         if event.action is Action.StartTransaction:
             task = await process_start_transaction(session, deepcopy(event))
         if event.action is Action.Authorize:

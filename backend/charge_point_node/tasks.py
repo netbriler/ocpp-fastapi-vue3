@@ -15,6 +15,7 @@ from manager.models.tasks.status_notification import StatusNotificationTask
 from manager.models.tasks.security_event_notification import SecurityEventNotificationTask
 from manager.models.tasks.authorize import AuthorizeTask
 from manager.models.tasks.start_transaction import StartTransactionTask
+from manager.models.tasks.stop_transaction import StopTransactionTask
 
 router = Router()
 
@@ -28,7 +29,8 @@ def prepare_task(func) -> Callable:
             Action.Heartbeat: HeartbeatTask,
             Action.SecurityEventNotification: SecurityEventNotificationTask,
             Action.Authorize: AuthorizeTask,
-            Action.StartTransaction: StartTransactionTask
+            Action.StartTransaction: StartTransactionTask,
+            Action.StopTransaction: StopTransactionTask
         }[data["action"]](**data)
         return await func(task, *args, **kwargs)
 
@@ -37,12 +39,15 @@ def prepare_task(func) -> Callable:
 
 @prepare_task
 async def process_task(
-        task: Union[StatusNotificationTask,
-                    BootNotificationTask,
-                    HeartbeatTask,
-                    SecurityEventNotificationTask,
-                    AuthorizeTask,
-                    StartTransactionTask],
+        task: Union[
+            StatusNotificationTask,
+            BootNotificationTask,
+            HeartbeatTask,
+            SecurityEventNotificationTask,
+            AuthorizeTask,
+            StartTransactionTask,
+            StopTransactionTask
+        ],
         server: WebSocketServer
 ) -> None:
     logger.info(f"Got task from manager (task={task})")
