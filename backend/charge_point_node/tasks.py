@@ -16,6 +16,7 @@ from manager.models.tasks.security_event_notification import SecurityEventNotifi
 from manager.models.tasks.authorize import AuthorizeTask
 from manager.models.tasks.start_transaction import StartTransactionTask
 from manager.models.tasks.stop_transaction import StopTransactionTask
+from manager.models.tasks.meter_values import MeterValuesTask
 
 router = Router()
 
@@ -30,7 +31,8 @@ def prepare_task(func) -> Callable:
             Action.SecurityEventNotification: SecurityEventNotificationTask,
             Action.Authorize: AuthorizeTask,
             Action.StartTransaction: StartTransactionTask,
-            Action.StopTransaction: StopTransactionTask
+            Action.StopTransaction: StopTransactionTask,
+            Action.MeterValues: MeterValuesTask
         }[data["action"]](**data)
         return await func(task, *args, **kwargs)
 
@@ -46,7 +48,8 @@ async def process_task(
             SecurityEventNotificationTask,
             AuthorizeTask,
             StartTransactionTask,
-            StopTransactionTask
+            StopTransactionTask,
+            MeterValuesTask
         ],
         server: WebSocketServer
 ) -> None:

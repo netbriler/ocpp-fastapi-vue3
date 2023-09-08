@@ -10,12 +10,14 @@ from ocpp.charge_point import snake_to_camel_case, camel_to_snake_case
 from ocpp.v16.call import (
     AuthorizePayload as CallAuthorizePayload,
     StartTransactionPayload as CallStartTransactionPayload,
-    StopTransactionPayload as CallStopTransactionPayload
+    StopTransactionPayload as CallStopTransactionPayload,
+    MeterValuesPayload as CallMeterValuesPayload
 )
 from ocpp.v16.call_result import (
     AuthorizePayload as CallResultAuthorizePayload,
     StartTransactionPayload as CallResultStartTransactionPayload,
-    StopTransactionPayload as CallResultStopTransactionPayload
+    StopTransactionPayload as CallResultStopTransactionPayload,
+    MeterValuesPayload as CallResultMeterValuesPayload
 )
 from ocpp.v16.enums import Action
 
@@ -74,6 +76,34 @@ async def test_start_transaction(websocket):
     transaction_id = payload.transaction_id
 
 
+async def test_meter_values(websocket):
+    meter_values_payload = dataclasses.asdict(CallMeterValuesPayload(
+        connector_id=1,
+        transaction_id=123,
+        meter_value=[
+            {
+                "timestamp": arrow.get().isoformat(),
+                "sampled_value": [
+                    {"value": "4567.45"}
+                ]
+            }
+        ]
+    ))
+    message_id = str(uuid4())
+    await websocket.send(json.dumps([
+        2,
+        message_id,
+        Action.MeterValues.value,
+        snake_to_camel_case({k: v for k, v in meter_values_payload.items() if not v is None})
+    ]))
+    await asyncio.sleep(1)
+    response = await websocket.recv()
+    data = json.loads(response)
+    assert data[0] == 3
+    assert data[1] == message_id
+    assert not data[2]
+
+
 async def test_stop_transaction(websocket):
 
     stop_transaction_payload = dataclasses.asdict(CallStopTransactionPayload(
@@ -105,6 +135,8 @@ async def test_charging():
         await test_authorize(websocket)
         await asyncio.sleep(1)
         await test_start_transaction(websocket)
+        await asyncio.sleep(1)
+        await test_meter_values(websocket)
         await asyncio.sleep(1)
         await test_stop_transaction(websocket)
         await asyncio.sleep(1)

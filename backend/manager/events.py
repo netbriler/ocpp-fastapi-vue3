@@ -15,12 +15,14 @@ from charge_point_node.models.on_connection import LostConnectionEvent
 from charge_point_node.models.authorize import AuthorizeEvent
 from charge_point_node.models.start_transaction import StartTransactionEvent
 from charge_point_node.models.stop_transaction import StopTransactionEvent
+from charge_point_node.models.meter_values import MeterValuesEvent
 from core.database import get_contextual_session
 from core.fields import ConnectionStatus
 from core.queue.publisher import publish
 from manager.services.ocpp.boot_notification import process_boot_notification
 from manager.services.charge_points import update_charge_point
 from manager.services.ocpp.heartbeat import process_heartbeat
+from manager.services.ocpp.meter_values import process_meter_values
 from manager.services.ocpp.security_event_notification import process_security_event_notification
 from manager.services.ocpp.start_transaction import process_start_transaction
 from manager.services.ocpp.status_notification import process_status_notification
@@ -33,6 +35,8 @@ from sse import sse_publisher
 def prepare_event(func) -> Callable:
     @wraps(func)
     async def wrapper(data):
+        logger.info(f"Got event from charge point node (event={data})")
+
         event = {
             ConnectionStatus.LOST_CONNECTION: LostConnectionEvent,
             Action.StatusNotification: StatusNotificationEvent,
@@ -41,7 +45,8 @@ def prepare_event(func) -> Callable:
             Action.SecurityEventNotification: SecurityEventNotificationEvent,
             Action.Authorize: AuthorizeEvent,
             Action.StartTransaction: StartTransactionEvent,
-            Action.StopTransaction: StopTransactionEvent
+            Action.StopTransaction: StopTransactionEvent,
+            Action.MeterValues: MeterValuesEvent
         }[data["action"]](**data)
         return await func(event)
 
@@ -58,14 +63,15 @@ async def process_event(event: Union[
     SecurityEventNotificationEvent,
     AuthorizeEvent,
     StartTransactionEvent,
-    StopTransactionEvent
+    StopTransactionEvent,
+    MeterValuesEvent
 ]) -> BaseEvent | None:
-    logger.info(f"Got event from charge point node (event={event})")
-
     task = None
 
     async with get_contextual_session() as session:
 
+        if event.action is Action.MeterValues:
+            task = await process_meter_values(session, deepcopy(event))
         if event.action is Action.StopTransaction:
             task = await process_stop_transaction(session, deepcopy(event))
         if event.action is Action.StartTransaction:
