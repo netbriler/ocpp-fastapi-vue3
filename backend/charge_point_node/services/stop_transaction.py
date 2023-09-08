@@ -31,7 +31,7 @@ async def on_stop_transaction(
 
 @router.out(Action.StopTransaction)
 async def respond_stop_transaction(task: StopTransactionTask) -> CallResultStopTransactionPayload:
-    logger.info(f"Start respond start_transaction task={task}).")
+    logger.info(f"Start respond stop transaction task={task}).")
     return CallResultStopTransactionPayload(
         id_tag_info=task.id_tag_info
     )

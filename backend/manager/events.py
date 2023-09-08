@@ -66,7 +66,7 @@ async def process_event(event: Union[
 
     async with get_contextual_session() as session:
 
-        if event.action is StopTransactionEvent:
+        if event.action is Action.StopTransaction:
             task = await process_stop_transaction(session, deepcopy(event))
         if event.action is Action.StartTransaction:
             task = await process_start_transaction(session, deepcopy(event))
