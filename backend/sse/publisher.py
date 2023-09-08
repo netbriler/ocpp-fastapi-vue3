@@ -5,6 +5,7 @@ from typing import List, Callable
 
 from loguru import logger
 
+import charge_point_node.tests
 import manager.services.charge_points as service
 from charge_point_node.models.base import BaseEvent
 from core import settings
@@ -49,7 +50,7 @@ class Publisher:
                 async with get_contextual_session() as session:
                     charge_point = await service.get_charge_point(
                         session,
-                        event.charge_point_id
+                        charge_point_node.tests.charge_point_id
                     )
                     if charge_point:
                         for observer in self.observers:

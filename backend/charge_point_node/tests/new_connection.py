@@ -19,50 +19,12 @@ from ocpp.v16.call_result import (
 )
 from ocpp.v16.enums import Action, ChargePointErrorCode, ChargePointStatus
 
+from charge_point_node.tests import init_data, clean_tables, charge_point_id, host, url
 from core import settings
 from core.database import get_contextual_session
-from manager.models import Location
 from manager.services.charge_points import get_charge_point
-from manager.views.charge_points import ConnectorView, CreateChargPointView
-from manager.views.locations import CreateLocationView
-from manager.services.charge_points import create_charge_point, remove_charge_point
-from manager.services.locations import create_location, remove_location
-from manager.services.accounts import list_accounts
+from manager.views.charge_points import ConnectorView
 
-location: Location | None = None
-charge_point_id = str(uuid4())
-host = "localhost"
-url = f"ws://{host}:{settings.WS_SERVER_PORT}/{charge_point_id}"
-
-
-async def init_data():
-    global account
-    global location
-    global charge_point
-
-    async with get_contextual_session() as session:
-        accounts = await list_accounts(session)
-        location_view = CreateLocationView(
-            name=str(uuid4()),
-            city="Kyiv",
-            address1="address"
-        )
-        location = await create_location(session, accounts[0].id, location_view)
-        await session.commit()
-        charge_point_view = CreateChargPointView(
-            location_id=location.id,
-            id=charge_point_id,
-            manufacturer="manufacturer",
-            serial_number=str(uuid4()),
-            model="model"
-        )
-        await create_charge_point(session, charge_point_view)
-        await session.commit()
-
-async def clean_tables():
-    async with get_contextual_session() as session:
-        await remove_charge_point(session, charge_point_id)
-        await remove_location(session, location.id)
 
 async def test_unrecognized_charge_point():
     try:
@@ -102,10 +64,8 @@ async def test_boot_notification(websocket):
         assert status == charge_point.status
 
 
-async def test_status_notification(websocket):
-    async with get_contextual_session() as session:
-        charge_point = await get_charge_point(session, charge_point_id)
-        connectors_length = len(charge_point.connectors.keys())
+async def test_status_notification(websocket, charge_point):
+    connectors_length = len(charge_point.connectors.keys())
 
     status_notification_payload = dataclasses.asdict(CallStatusNotificationPayload(
         connector_id=0,
@@ -200,31 +160,21 @@ async def test_security_notification_event(websocket):
 
 
 async def test_new_connection():
-    await init_data()
+    account, location, charge_point = await init_data(charge_point_id)
 
     await test_unrecognized_charge_point()
     await asyncio.sleep(1)
 
-    async with get_contextual_session() as session:
-        charge_point = await get_charge_point(session, charge_point_id)
-        if not charge_point:
-            print(f"ERROR: Create charge point with id '{charge_point_id}', first.")
-            return
-        charge_point.connectors = {}
-        charge_point.status = ChargePointStatus.unavailable.value
-        session.add(charge_point)
-        await session.commit()
-
     async with websockets.connect(url) as websocket:
         await test_boot_notification(websocket)
         await asyncio.sleep(1)
-        await test_status_notification(websocket)
+        await test_status_notification(websocket, charge_point)
         await asyncio.sleep(1)
         await test_heartbeat(websocket)
         await asyncio.sleep(1)
         await test_security_notification_event(websocket)
 
-    await clean_tables()
+    await clean_tables(account, location, charge_point)
     print("\n\n --- SUCCESS ---")
 
 if __name__ == "__main__":

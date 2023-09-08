@@ -53,7 +53,7 @@ async def create_charge_point(session, data: CreateChargPointView):
         data.password = sha256.hash(data.password)
     charge_point = ChargePoint(**data.dict())
     session.add(charge_point)
-
+    return charge_point
 
 async def update_charge_point(
         session,
