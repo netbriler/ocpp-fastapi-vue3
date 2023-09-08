@@ -11,7 +11,7 @@ from manager.controllers.charge_points import charge_points_router
 from manager.controllers.common import common_router
 from manager.controllers.locations import locations_router
 from manager.services.accounts import list_accounts
-from manager.services.events import process_event
+from manager.events import process_event
 from sse.controllers import stream_router
 
 background_tasks = set()

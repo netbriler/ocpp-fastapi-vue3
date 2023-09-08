@@ -7,10 +7,10 @@ from ocpp.exceptions import NotSupportedError, FormatViolationError, ProtocolErr
     PropertyConstraintViolationError
 from ocpp.messages import unpack
 
-from charge_point_node.models.on_connection import OnConnectionEvent, LostConnectionEvent
+from charge_point_node.models.on_connection import LostConnectionEvent
 from charge_point_node.protocols import OCPPWebSocketServerProtocol
 from charge_point_node.router import Router
-from charge_point_node.services.tasks import process_task
+from charge_point_node.tasks import process_task
 from core.queue.consumer import start_consume
 from core.queue.publisher import publish
 from core.settings import WS_SERVER_PORT, TASKS_QUEUE_NAME

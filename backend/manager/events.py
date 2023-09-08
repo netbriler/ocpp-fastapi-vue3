@@ -12,6 +12,7 @@ from charge_point_node.models.status_notification import StatusNotificationEvent
 from charge_point_node.models.boot_notification import BootNotificationEvent
 from charge_point_node.models.heartbeat import HeartbeatEvent
 from charge_point_node.models.on_connection import LostConnectionEvent
+from charge_point_node.models.authorize import AuthorizeEvent
 from core.database import get_contextual_session
 from core.fields import ConnectionStatus
 from core.queue.publisher import publish
@@ -20,6 +21,7 @@ from manager.services.charge_points import update_charge_point, update_connector
 from manager.services.heartbeat import process_heartbeat
 from manager.services.security_event_notification import process_security_event_notification
 from manager.services.status_notification import process_status_notification
+from manager.services.authorize import process_authorize
 from manager.views.charge_points import ChargePointUpdateStatusView
 from sse import sse_publisher
 
@@ -32,7 +34,8 @@ def prepare_event(func) -> Callable:
             Action.StatusNotification: StatusNotificationEvent,
             Action.BootNotification: BootNotificationEvent,
             Action.Heartbeat: HeartbeatEvent,
-            Action.SecurityEventNotification: SecurityEventNotificationEvent
+            Action.SecurityEventNotification: SecurityEventNotificationEvent,
+            Action.Authorize: AuthorizeEvent
         }[data["action"]](**data)
         return await func(event)
 
@@ -46,7 +49,8 @@ async def process_event(event: Union[
     StatusNotificationEvent,
     BootNotificationEvent,
     HeartbeatEvent,
-    SecurityEventNotificationEvent
+    SecurityEventNotificationEvent,
+    AuthorizeEvent
 ]) -> BaseEvent | None:
     logger.info(f"Got event from charge point node (event={event})")
 
@@ -55,6 +59,8 @@ async def process_event(event: Union[
 
     async with get_contextual_session() as session:
 
+        if event.action is Action.Authorize:
+            task = await process_authorize(deepcopy(event))
         if event.action is Action.SecurityEventNotification:
             task = await process_security_event_notification(deepcopy(event))
         if event.action is Action.BootNotification:
