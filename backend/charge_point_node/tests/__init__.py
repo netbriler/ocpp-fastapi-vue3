@@ -40,6 +40,6 @@ async def clean_tables(account, location, charge_point):
     async with get_contextual_session() as session:
         await remove_charge_point(session, charge_point.id)
         await remove_location(session, location.id)
-
+        await session.commit()
 
 
