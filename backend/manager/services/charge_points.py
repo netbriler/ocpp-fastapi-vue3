@@ -3,10 +3,9 @@ from __future__ import annotations
 import asyncio
 from typing import Dict
 
-from ocpp.v16.enums import ChargePointStatus
 from loguru import logger
 from passlib.hash import pbkdf2_sha256 as sha256
-from sqlalchemy import select, update, text, func, or_, String
+from sqlalchemy import select, update, text, func, or_, String, delete
 from sqlalchemy.sql import selectable
 
 import manager.models as models
@@ -66,6 +65,12 @@ async def update_charge_point(
     await session.execute(update(ChargePoint) \
                           .where(ChargePoint.id == charge_point_id) \
                           .values(**data.dict(exclude_unset=True)))
+
+async def remove_charge_point(session, charge_point_id: str) -> None:
+        query = delete(ChargePoint) \
+            .where(ChargePoint.id == charge_point_id)
+        await session.execute(query)
+
 
 async def get_statuses_counts(session, account_id: str) -> Dict:
     """

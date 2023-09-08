@@ -2,6 +2,7 @@ import asyncio
 
 from loguru import logger
 
+from core.database import get_contextual_session
 from core.queue.consumer import start_consume
 from core.settings import EVENTS_QUEUE_NAME
 from manager import app
@@ -25,8 +26,9 @@ async def startup():
     )
     background_tasks.add(task)
 
-    accounts = await list_accounts()
-    logger.info(f"Started up application with accounts = ({accounts}).")
+    async with get_contextual_session() as session:
+        accounts = await list_accounts(session)
+        logger.info(f"Started up application with accounts = ({accounts}).")
 
 
 app.include_router(common_router)

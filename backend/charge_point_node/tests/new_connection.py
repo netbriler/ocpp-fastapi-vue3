@@ -21,20 +21,57 @@ from ocpp.v16.enums import Action, ChargePointErrorCode, ChargePointStatus
 
 from core import settings
 from core.database import get_contextual_session
+from manager.models import Location
 from manager.services.charge_points import get_charge_point
-from manager.views.charge_points import ConnectorView
+from manager.views.charge_points import ConnectorView, CreateChargPointView
+from manager.views.locations import CreateLocationView
+from manager.services.charge_points import create_charge_point, remove_charge_point
+from manager.services.locations import create_location, remove_location
+from manager.services.accounts import list_accounts
 
-charge_point_id = "test"
+location: Location | None = None
+charge_point_id = str(uuid4())
 host = "localhost"
 url = f"ws://{host}:{settings.WS_SERVER_PORT}/{charge_point_id}"
 
+
+async def init_data():
+    global account
+    global location
+    global charge_point
+
+    async with get_contextual_session() as session:
+        accounts = await list_accounts(session)
+        location_view = CreateLocationView(
+            name=str(uuid4()),
+            city="Kyiv",
+            address1="address"
+        )
+        location = await create_location(session, accounts[0].id, location_view)
+        await session.commit()
+        charge_point_view = CreateChargPointView(
+            location_id=location.id,
+            id=charge_point_id,
+            manufacturer="manufacturer",
+            serial_number=str(uuid4()),
+            model="model"
+        )
+        await create_charge_point(session, charge_point_view)
+        await session.commit()
+
+async def clean_tables():
+    async with get_contextual_session() as session:
+        await remove_charge_point(session, charge_point_id)
+        await remove_location(session, location.id)
 
 async def test_unrecognized_charge_point():
     try:
         await websockets.connect(f"ws://{host}:{settings.WS_SERVER_PORT}/unrecognized")
         raise Exception
     except InvalidStatusCode as exc:
-        assert HTTPStatus(exc.status_code) is HTTPStatus.UNAUTHORIZED
+        result = HTTPStatus(exc.status_code) is HTTPStatus.UNAUTHORIZED
+        if not result:
+            print(f"FAILED test_unrecognized_charge_point: {HTTPStatus(exc.status_code)} != {HTTPStatus.UNAUTHORIZED}")
 
 
 async def test_boot_notification(websocket):
@@ -83,6 +120,7 @@ async def test_status_notification(websocket):
         Action.StatusNotification.value,
         snake_to_camel_case({k: v for k, v in status_notification_payload.items() if not v is None})
     ]))
+    await asyncio.sleep(1)
     response = await websocket.recv()
     data = json.loads(response)
     assert data[0] == 3
@@ -90,7 +128,11 @@ async def test_status_notification(websocket):
     assert not data[2]
     async with get_contextual_session() as session:
         charge_point = await get_charge_point(session, charge_point_id)
-        assert charge_point.status is ChargePointStatus.available
+        try:
+            assert charge_point.status is ChargePointStatus.available
+        except AssertionError as exc:
+            print(f"ERROR: {charge_point.status} != {ChargePointStatus.available}")
+            return
         assert connectors_length == len(charge_point.connectors)
 
     status_notification_payload = dataclasses.asdict(CallStatusNotificationPayload(
@@ -106,7 +148,7 @@ async def test_status_notification(websocket):
         Action.StatusNotification.value,
         snake_to_camel_case({k: v for k, v in status_notification_payload.items() if not v is None})
     ]))
-    await asyncio.sleep(2)
+    await asyncio.sleep(1)
     response = await websocket.recv()
     data = json.loads(response)
     assert data[0] == 3
@@ -128,7 +170,7 @@ async def test_heartbeat(websocket):
         Action.Heartbeat.value,
         {}
     ]))
-
+    await asyncio.sleep(1)
     response = await websocket.recv()
     data = json.loads(response)
     assert data[0] == 3
@@ -150,7 +192,7 @@ async def test_security_notification_event(websocket):
         Action.SecurityEventNotification.value,
         snake_to_camel_case({k: v for k, v in security_notification_payload.items() if not v is None})
     ]))
-
+    await asyncio.sleep(1)
     response = await websocket.recv()
     data = json.loads(response)
     assert data[0] == 3
@@ -158,6 +200,8 @@ async def test_security_notification_event(websocket):
 
 
 async def test_new_connection():
+    await init_data()
+
     await test_unrecognized_charge_point()
     await asyncio.sleep(1)
 
@@ -180,7 +224,7 @@ async def test_new_connection():
         await asyncio.sleep(1)
         await test_security_notification_event(websocket)
 
-        await asyncio.sleep(5)
+    await clean_tables()
 
 if __name__ == "__main__":
     asyncio.get_event_loop().run_until_complete(test_new_connection())

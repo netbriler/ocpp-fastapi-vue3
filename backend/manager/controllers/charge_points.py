@@ -11,7 +11,7 @@ from manager.models.tasks.connections import DisconnectTask
 from manager.services.accounts import get_account
 from manager.services.charge_points import (
     get_charge_point,
-    get_statuses_counts, create_charge_point, build_charge_points_query
+    get_statuses_counts, create_charge_point, build_charge_points_query, remove_charge_point
 )
 from manager.utils import acquire_lock, params_extractor, paginate
 from manager.views.charge_points import StatusCount, PaginatedChargePointsView, CreateChargPointView
@@ -92,8 +92,6 @@ async def delete_charge_point(
         charge_point_id: str,
         account: Account = Depends(get_account),
 ):
-    async with get_contextual_session() as session:
-        query = delete(ChargePoint) \
-            .where(ChargePoint.id == charge_point_id)
-        await session.execute(query)
+        async with get_contextual_session() as session:
+            await remove_charge_point(session, charge_point_id)
         await session.commit()

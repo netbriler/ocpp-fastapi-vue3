@@ -22,16 +22,13 @@ async def get_account(
     return account
 
 
-async def create_account(data: CreateAccountView) -> Account:
-    async with get_contextual_session() as session:
-        account = Account(**data.dict())
-        session.add(account)
-        await session.commit()
-        return account
+async def create_account(session, data: CreateAccountView) -> Account:
+    account = Account(**data.dict())
+    session.add(account)
+    return account
 
 
-async def list_accounts() -> List[Account]:
-    async with get_contextual_session() as session:
-        query = select(Account).where(Account.is_active.is_(True))
-        result = await session.execute(query)
-        return [i[0] for i in result.unique().fetchall()]
+async def list_accounts(session) -> List[Account]:
+    query = select(Account).where(Account.is_active.is_(True))
+    result = await session.execute(query)
+    return [i[0] for i in result.unique().fetchall()]
