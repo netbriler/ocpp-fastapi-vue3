@@ -13,15 +13,17 @@ from charge_point_node.models.boot_notification import BootNotificationEvent
 from charge_point_node.models.heartbeat import HeartbeatEvent
 from charge_point_node.models.on_connection import LostConnectionEvent
 from charge_point_node.models.authorize import AuthorizeEvent
+from charge_point_node.models.start_transaction import StartTransactionEvent
 from core.database import get_contextual_session
 from core.fields import ConnectionStatus
 from core.queue.publisher import publish
-from manager.services.boot_notification import process_boot_notification
-from manager.services.charge_points import update_charge_point, update_connectors
-from manager.services.heartbeat import process_heartbeat
-from manager.services.security_event_notification import process_security_event_notification
-from manager.services.status_notification import process_status_notification
-from manager.services.authorize import process_authorize
+from manager.services.ocpp.boot_notification import process_boot_notification
+from manager.services.charge_points import update_charge_point
+from manager.services.ocpp.heartbeat import process_heartbeat
+from manager.services.ocpp.security_event_notification import process_security_event_notification
+from manager.services.ocpp.start_transaction import process_start_transaction
+from manager.services.ocpp.status_notification import process_status_notification
+from manager.services.ocpp.authorize import process_authorize
 from manager.views.charge_points import ChargePointUpdateStatusView
 from sse import sse_publisher
 
@@ -35,7 +37,8 @@ def prepare_event(func) -> Callable:
             Action.BootNotification: BootNotificationEvent,
             Action.Heartbeat: HeartbeatEvent,
             Action.SecurityEventNotification: SecurityEventNotificationEvent,
-            Action.Authorize: AuthorizeEvent
+            Action.Authorize: AuthorizeEvent,
+            Action.StartTransaction: StartTransactionEvent
         }[data["action"]](**data)
         return await func(event)
 
@@ -50,37 +53,36 @@ async def process_event(event: Union[
     BootNotificationEvent,
     HeartbeatEvent,
     SecurityEventNotificationEvent,
-    AuthorizeEvent
+    AuthorizeEvent,
+    StartTransactionEvent
 ]) -> BaseEvent | None:
     logger.info(f"Got event from charge point node (event={event})")
 
-    payload = None
     task = None
 
     async with get_contextual_session() as session:
 
+        if event.action is Action.StartTransaction:
+            task = await process_start_transaction(session, deepcopy(event))
         if event.action is Action.Authorize:
-            task = await process_authorize(deepcopy(event))
+            task = await process_authorize(session, deepcopy(event))
         if event.action is Action.SecurityEventNotification:
-            task = await process_security_event_notification(deepcopy(event))
+            task = await process_security_event_notification(session, deepcopy(event))
         if event.action is Action.BootNotification:
-            task = await process_boot_notification(deepcopy(event))
+            task = await process_boot_notification(session, deepcopy(event))
         if event.action is Action.StatusNotification:
-            task = await process_status_notification(deepcopy(event))
-            await update_connectors(session, event)
-            if event.payload.connector_id == 0:
-                payload = ChargePointUpdateStatusView(status=event.payload.status)
+            task = await process_status_notification(session, deepcopy(event))
         if event.action is Action.Heartbeat:
-            task = await process_heartbeat(deepcopy(event))
-            payload = ChargePointUpdateStatusView(status=ChargePointStatus.available)
-        if event.action is ConnectionStatus.LOST_CONNECTION:
-            payload = ChargePointUpdateStatusView(status=ChargePointStatus.unavailable)
+            task = await process_heartbeat(session, deepcopy(event))
 
-        if payload:
-            await update_charge_point(session, charge_point_id=event.charge_point_id, data=payload)
-            logger.info(f"Completed process event={event}")
+        if event.action is ConnectionStatus.LOST_CONNECTION:
+            data = ChargePointUpdateStatusView(status=ChargePointStatus.unavailable)
+            await update_charge_point(session, charge_point_id=event.charge_point_id, data=data)
+
         if task:
             await publish(task.json(), to=task.target_queue, priority=task.priority)
 
         await session.commit()
+        logger.info(f"Successfully completed process event={event}")
+
         return event

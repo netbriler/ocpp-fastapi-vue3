@@ -225,6 +225,7 @@ async def test_new_connection():
         await test_security_notification_event(websocket)
 
     await clean_tables()
+    print("\n\n --- SUCCESS ---")
 
 if __name__ == "__main__":
     asyncio.get_event_loop().run_until_complete(test_new_connection())

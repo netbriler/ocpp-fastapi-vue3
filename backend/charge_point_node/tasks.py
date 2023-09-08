@@ -4,7 +4,7 @@ from functools import wraps
 from typing import Callable, Union
 
 from loguru import logger
-from ocpp.v201.enums import Action
+from ocpp.v16.enums import Action
 from websockets.legacy.server import WebSocketServer
 
 from charge_point_node.router import Router
@@ -14,6 +14,7 @@ from manager.models.tasks.heartbeat import HeartbeatTask
 from manager.models.tasks.status_notification import StatusNotificationTask
 from manager.models.tasks.security_event_notification import SecurityEventNotificationTask
 from manager.models.tasks.authorize import AuthorizeTask
+from manager.models.tasks.start_transaction import StartTransactionTask
 
 router = Router()
 
@@ -26,7 +27,8 @@ def prepare_task(func) -> Callable:
             Action.BootNotification: BootNotificationTask,
             Action.Heartbeat: HeartbeatTask,
             Action.SecurityEventNotification: SecurityEventNotificationTask,
-            Action.Authorize: AuthorizeTask
+            Action.Authorize: AuthorizeTask,
+            Action.StartTransaction: StartTransactionTask
         }[data["action"]](**data)
         return await func(task, *args, **kwargs)
 
@@ -39,7 +41,8 @@ async def process_task(
                     BootNotificationTask,
                     HeartbeatTask,
                     SecurityEventNotificationTask,
-                    AuthorizeTask],
+                    AuthorizeTask,
+                    StartTransactionTask],
         server: WebSocketServer
 ) -> None:
     logger.info(f"Got task from manager (task={task})")

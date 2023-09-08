@@ -1,12 +1,14 @@
 from ocpp.v201.enums import RegistrationStatusType
 
-from charge_point_node.models.base import BaseEvent
+from charge_point_node.models.boot_notification import BootNotificationEvent
 from core.utils import get_utc_as_string
 from manager.models.tasks.boot_notification import BootNotificationTask
 
 
-async def process_boot_notification(event: BaseEvent) -> BootNotificationTask:
-    # Do some logic here
+async def process_boot_notification(
+        session,
+        event: BootNotificationEvent
+) -> BootNotificationTask:
 
     return BootNotificationTask(
         message_id=event.message_id,

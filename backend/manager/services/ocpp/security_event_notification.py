@@ -3,6 +3,7 @@ from charge_point_node.models.security_event_notification import SecurityEventNo
 
 
 async def process_security_event_notification(
+        session,
         event: SecurityEventNotificationEvent
 ) -> SecurityEventNotificationTask:
     # Do some logic here

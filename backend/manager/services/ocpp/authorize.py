@@ -2,7 +2,7 @@ from charge_point_node.models.authorize import AuthorizeEvent
 from manager.models.tasks.authorize import AuthorizeTask
 
 
-async def process_authorize(event: AuthorizeEvent) -> AuthorizeTask:
+async def process_authorize(session, event: AuthorizeEvent) -> AuthorizeTask:
     # Do some logic here
 
     return AuthorizeTask(
