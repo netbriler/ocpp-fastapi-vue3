@@ -47,7 +47,7 @@ async def build_transactions_query(account: models.Account, search: str) -> sele
     query = select(Transaction)
     for criteria in criterias:
         query = query.where(criteria)
-    query = query.order_by(Transaction.updated_at.asc())
+    query = query.order_by(Transaction.transaction_id.desc())
     if search:
         query = query.where(or_(
             func.lower(Transaction.city).contains(func.lower(search)),

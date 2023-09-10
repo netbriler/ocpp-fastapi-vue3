@@ -6,6 +6,7 @@ export const useCountersStore = defineStore("counters", {
     counters: {
       locations: 0,
       stations: 0,
+      transactions: 0,
     },
   }),
   actions: {
@@ -13,6 +14,7 @@ export const useCountersStore = defineStore("counters", {
       requestCounters().then((response) => {
         this.counters.locations = response.locations;
         this.counters.stations = response.stations;
+        this.counters.transactions = response.transactions;
       });
     },
   },

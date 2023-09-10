@@ -156,11 +156,11 @@ async def test_charging():
         await test_authorize(websocket)
         await asyncio.sleep(1)
         await test_start_transaction(websocket, account, location, charge_point)
-        await asyncio.sleep(1)
+        await asyncio.sleep(5)
         await test_meter_values(websocket)
         await asyncio.sleep(1)
         await test_stop_transaction(websocket, account, location, charge_point)
-        await asyncio.sleep(1)
+        await asyncio.sleep(5)
 
     await clean_tables(account, location, charge_point)
 

@@ -15,6 +15,7 @@ class PaginationView(BaseModel):
 class CountersView(BaseModel):
     locations: int
     stations: int
+    transactions: int
 
     class Config:
         orm_mode = True

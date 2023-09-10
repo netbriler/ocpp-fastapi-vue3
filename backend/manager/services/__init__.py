@@ -8,6 +8,8 @@ async def get_counters(account_id: str):
         query = "SELECT " \
                 "(SELECT COUNT(id) FROM locations " \
                 "WHERE is_active = 't' AND account_id = '{account_id}') AS locations," \
+                "(SELECT COUNT(id) FROM transactions " \
+                "WHERE account_id = '{account_id}') as transactions, " \
                 "(SELECT COUNT(cp.id) FROM charge_points cp " \
                 "JOIN locations l ON l.id = cp.location_id " \
                 "WHERE cp.is_active = 't' AND l.account_id = '{account_id}') as stations;" \

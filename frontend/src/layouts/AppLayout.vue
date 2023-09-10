@@ -11,7 +11,7 @@
           density="comfortable"
         >
           {{ link.name }}
-          <v-chip v-if="counters[link.name] !== undefined" class="ml-2">{{
+          <v-chip v-if="showCounters(link)" class="ml-2">{{
             counters[link.name]
           }}</v-chip>
         </v-tab>
@@ -58,6 +58,10 @@ const { fetchCounters } = useCountersStore();
 
 const router = useRouter();
 const accountId = router.currentRoute.value.params.accountId;
+
+const showCounters = (link) => {
+  return counters.value[link.name] !== undefined;
+};
 
 onBeforeMount(() => {
   initEventSource();

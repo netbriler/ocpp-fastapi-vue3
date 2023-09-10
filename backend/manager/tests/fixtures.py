@@ -115,8 +115,6 @@ async def create_dummy_data(
         charge_points=200,
         transactions=500
 ):
-    await asyncio.gather(
-        create_dummy_locations(locations),
-        create_dummy_charge_points(charge_points),
-        create_dummy_transactions(transactions)
-    )
+    await create_dummy_locations(locations),
+    await create_dummy_charge_points(charge_points),
+    await create_dummy_transactions(transactions)
