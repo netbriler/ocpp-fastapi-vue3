@@ -10,6 +10,7 @@ from manager.controllers.accounts import accounts_router
 from manager.controllers.charge_points import charge_points_router
 from manager.controllers.common import common_router
 from manager.controllers.locations import locations_router
+from manager.controllers.transactions import transaction_router
 from manager.services.accounts import list_accounts
 from manager.events import process_event
 from sse.controllers import stream_router
@@ -36,3 +37,4 @@ app.include_router(stream_router)
 app.include_router(charge_points_router)
 app.include_router(locations_router)
 app.include_router(accounts_router)
+app.include_router(transaction_router)
