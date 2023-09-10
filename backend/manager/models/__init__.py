@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 from pydantic import BaseModel
-from sqlalchemy import Column, String, ForeignKey, Enum, Numeric, JSON, Integer
+from sqlalchemy import Column, String, ForeignKey, Enum, Numeric, JSON, Integer, select, Sequence
 from sqlalchemy.orm import relationship
 from ocpp.v16.enums import ChargePointStatus
 
-from core.fields import SessionStatus
 from core.database import Model
 
 
@@ -16,6 +15,9 @@ class Account(Model):
     locations = relationship("Location",
                              back_populates="account",
                              lazy="joined")
+    transactions = relationship("Transaction",
+                                 back_populates="account",
+                                 lazy="joined")
 
     def __repr__(self) -> str:
         return f"Account: {self.name}, {self.id}, active={self.is_active}"
@@ -59,31 +61,24 @@ class ChargePoint(Model):
     location_id = Column(String, ForeignKey("locations.id"), nullable=False)
     location = relationship("Location", back_populates="charge_points", lazy="joined")
 
-    charging_sessions = relationship("ChargingSession",
-                                     back_populates="charge_point",
-                                     lazy="joined")
-
     def __repr__(self):
         return f"ChargePoint (id={self.id}, status={self.status}, location={self.location})"
 
 
-class ChargingSession(Model):
-    __tablename__ = "charging_sessions"
-
-    status = Column(Enum(SessionStatus), default=SessionStatus.IN_PROGRESS, index=True)
-
-    charge_point_id = Column(String, ForeignKey("charge_points.id", ondelete="CASCADE"), nullable=False)
-    charge_point = relationship("ChargePoint", back_populates="charging_sessions", lazy="joined")
-
-
 class Transaction(Model):
     __tablename__ = "transactions"
+    transaction_id_seq = Sequence("transaction_id_seq")
 
     city = Column(String, nullable=False)
     vehicle = Column(String, nullable=False)
     address = Column(String, nullable=False)
-    capacity = Column(Integer, nullable=False)
+    meter_start = Column(Integer, nullable=False)
+    meter_stop = Column(Integer, nullable=True)
     charge_point = Column(String, nullable=False)
+    transaction_id = Column(Integer, transaction_id_seq, server_default=transaction_id_seq.next_value())
+
+    account_id = Column(String, ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False)
+    account = relationship("Account", back_populates="transactions", lazy='joined')
 
 
 class AuthData(BaseModel):

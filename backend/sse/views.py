@@ -21,6 +21,9 @@ class HearbeatMetadata(BaseModel):
 class StatusNotificationMetadata(BaseModel):
     pass
 
+class StartTransactionMetadata(BaseModel):
+    pass
+
 class SSEventData(BaseModel):
     charge_point_id: str
     name: str
@@ -49,5 +52,7 @@ class Redactor:
             data.meta = StatusNotificationMetadata().dict()
         if event.action in [Action.Heartbeat]:
             data.meta = HearbeatMetadata().dict()
+        if event.action in [Action.StartTransaction]:
+            data.meta = StartTransactionMetadata().dict()
 
         return SSEvent(data=data)

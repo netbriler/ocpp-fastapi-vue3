@@ -1,7 +1,10 @@
 from uuid import uuid4
 
+from sqlalchemy import delete
+
 from core import settings
 from core.database import get_contextual_session
+from manager.models import Transaction
 from manager.services.accounts import list_accounts
 from manager.services.charge_points import create_charge_point, remove_charge_point
 from manager.services.locations import create_location, remove_location
@@ -40,6 +43,10 @@ async def clean_tables(account, location, charge_point):
     async with get_contextual_session() as session:
         await remove_charge_point(session, charge_point.id)
         await remove_location(session, location.id)
+
+        query = delete(Transaction).where(Transaction.charge_point == charge_point.id)
+        await session.execute(query)
+
         await session.commit()
 
 

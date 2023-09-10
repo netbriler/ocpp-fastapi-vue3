@@ -17,11 +17,12 @@ from ocpp.v16.call_result import (
     AuthorizePayload as CallResultAuthorizePayload,
     StartTransactionPayload as CallResultStartTransactionPayload,
     StopTransactionPayload as CallResultStopTransactionPayload,
-    MeterValuesPayload as CallResultMeterValuesPayload
 )
 from ocpp.v16.enums import Action
 
 from charge_point_node.tests import init_data, charge_point_id, url, clean_tables
+from core.database import get_contextual_session
+from manager.services.transactions import get_transaction
 
 id_tag: str | None = None
 transaction_id: int | None = None
@@ -47,16 +48,17 @@ async def test_authorize(websocket):
     CallResultAuthorizePayload(**camel_to_snake_case(data[2]))
 
 
-async def test_start_transaction(websocket):
+async def test_start_transaction(websocket, account, location, charge_point):
     global transaction_id
     global id_tag
 
     id_tag = str(uuid4()).split("-")[0]
+    meter_start = 1000
 
     start_transaction_payload = dataclasses.asdict(CallStartTransactionPayload(
         connector_id=1,
         id_tag=id_tag,
-        meter_start=1000,
+        meter_start=meter_start,
         timestamp=arrow.get().isoformat()
     ))
 
@@ -74,6 +76,15 @@ async def test_start_transaction(websocket):
     assert data[1] == message_id
     payload = CallResultStartTransactionPayload(**camel_to_snake_case(data[2]))
     transaction_id = payload.transaction_id
+
+    async with get_contextual_session() as session:
+        transaction = await get_transaction(session, payload.transaction_id)
+        assert transaction.account_id == account.id
+        assert transaction.city == location.city
+        assert transaction.address == location.address1
+        assert transaction.charge_point == charge_point.id
+        assert transaction.meter_start == meter_start
+        assert not transaction.meter_stop
 
 
 async def test_meter_values(websocket):
@@ -104,10 +115,11 @@ async def test_meter_values(websocket):
     assert not data[2]
 
 
-async def test_stop_transaction(websocket):
+async def test_stop_transaction(websocket, account, location, charge_point):
 
+    meter_stop = 1200
     stop_transaction_payload = dataclasses.asdict(CallStopTransactionPayload(
-        meter_stop=1200,
+        meter_stop=meter_stop,
         id_tag=id_tag,
         timestamp=arrow.get().isoformat(),
         transaction_id=transaction_id
@@ -127,6 +139,15 @@ async def test_stop_transaction(websocket):
     assert data[1] == message_id
     CallResultStopTransactionPayload(**camel_to_snake_case(data[2]))
 
+    async with get_contextual_session() as session:
+        transaction = await get_transaction(session, transaction_id)
+        assert transaction.account_id == account.id
+        assert transaction.city == location.city
+        assert transaction.address == location.address1
+        assert transaction.charge_point == charge_point.id
+        assert transaction.meter_stop == meter_stop
+        assert transaction.meter_stop >= transaction.meter_start
+
 
 async def test_charging():
     account, location, charge_point = await init_data(charge_point_id)
@@ -134,11 +155,11 @@ async def test_charging():
     async with websockets.connect(url) as websocket:
         await test_authorize(websocket)
         await asyncio.sleep(1)
-        await test_start_transaction(websocket)
+        await test_start_transaction(websocket, account, location, charge_point)
         await asyncio.sleep(1)
         await test_meter_values(websocket)
         await asyncio.sleep(1)
-        await test_stop_transaction(websocket)
+        await test_stop_transaction(websocket, account, location, charge_point)
         await asyncio.sleep(1)
 
     await clean_tables(account, location, charge_point)

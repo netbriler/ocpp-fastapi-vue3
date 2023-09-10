@@ -6,8 +6,3 @@ class ConnectionStatus(str, Enum):
     LOST_CONNECTION = "lost_connection"
     DISCONNECT = "disconnect"
 
-
-class SessionStatus(str, Enum):
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    FAILED = "failed"
