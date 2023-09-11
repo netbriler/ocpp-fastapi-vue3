@@ -12,7 +12,7 @@
         <v-col>
           <v-card-item class="ma-6 pa-2">
             <v-text-field
-              label="Name, City or Address"
+              label="City, Address, Vehicle or Station"
               density="compact"
               variant="outlined"
               append-inner-icon="mdi-magnify"
