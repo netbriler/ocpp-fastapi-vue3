@@ -20,6 +20,7 @@ class UpdateTransactionView(BaseModel):
 
 
 class Transaction(BaseModel):
+    id: str
     city: str
     vehicle: str
     address: str

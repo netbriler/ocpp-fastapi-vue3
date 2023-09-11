@@ -74,8 +74,10 @@ async def process_event(event: Union[
             task = await process_meter_values(session, deepcopy(event))
         if event.action is Action.StopTransaction:
             task = await process_stop_transaction(session, deepcopy(event))
+            event.transaction_id = event.payload.transaction_id
         if event.action is Action.StartTransaction:
             task = await process_start_transaction(session, deepcopy(event))
+            event.transaction_id = task.transaction_id
         if event.action is Action.Authorize:
             task = await process_authorize(session, deepcopy(event))
         if event.action is Action.SecurityEventNotification:

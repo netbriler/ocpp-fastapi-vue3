@@ -8,14 +8,14 @@
 [
   2,
   "4766463734",
-  "BootNotification",
+  "StatusNotification",
   {"connectorId": 0, "errorCode": "NoError","status": "Available"}
 ]
 
 [
   2,
   "4766463735",
-  "BootNotification",
+  "StatusNotification",
   {"connectorId": 1, "errorCode": "NoError","status": "Available"}
 ]
 

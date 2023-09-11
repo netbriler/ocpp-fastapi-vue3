@@ -124,12 +124,19 @@ const headers = [
 ];
 
 const processSSE = (event) => {
-  console.log(`Start process event for transactions (event=${event.name}.)`);
-  if (currentPage.value === 1) {
-    fetchData();
-  }
-  if (event.name === EVENT_NAMES.start_transaction) {
+  console.log(
+    `Start process event for transactions (event=${event.name}, transaction=${event.meta.id})`
+  );
+  if (currentPage.value === 1 && event.name === EVENT_NAMES.start_transaction) {
+    items.value.pop();
+    items.value.unshift(event.meta);
     fetchCounters();
+  }
+  if (event.name === EVENT_NAMES.stop_transaction) {
+    items.value = [
+      event.meta,
+      ...items.value.filter((item) => item.id !== event.meta.id),
+    ];
   }
 };
 

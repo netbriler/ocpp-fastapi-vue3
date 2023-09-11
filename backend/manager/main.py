@@ -32,9 +32,9 @@ async def startup():
         logger.info(f"Started up application with accounts = ({accounts}).")
 
 
+app.include_router(accounts_router)
 app.include_router(common_router)
 app.include_router(stream_router)
 app.include_router(charge_points_router)
 app.include_router(locations_router)
-app.include_router(accounts_router)
 app.include_router(transaction_router)

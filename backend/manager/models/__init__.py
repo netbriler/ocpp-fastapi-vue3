@@ -12,12 +12,8 @@ class Account(Model):
     __tablename__ = "accounts"
 
     name = Column(String(48), nullable=False, unique=True)
-    locations = relationship("Location",
-                             back_populates="account",
-                             lazy="joined")
-    transactions = relationship("Transaction",
-                                 back_populates="account",
-                                 lazy="joined")
+    locations = relationship("Location", back_populates="account")
+    transactions = relationship("Transaction", back_populates="account")
 
     def __repr__(self) -> str:
         return f"Account: {self.name}, {self.id}, active={self.is_active}"
