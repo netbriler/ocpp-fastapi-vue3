@@ -78,33 +78,9 @@ class Redactor:
             data.meta = StatusNotificationMetadata().dict()
         if event.action in [Action.Heartbeat]:
             data.meta = HearbeatMetadata().dict()
-        if event.action in [Action.StopTransaction]:
+        if event.action in [Action.StopTransaction, Action.StartTransaction]:
             async with get_contextual_session() as session:
                 transaction = await get_transaction(session, event.transaction_id)
-                data.meta = Transaction(
-                    id=transaction.id,
-                    city=transaction.city,
-                    vehicle=transaction.vehicle,
-                    address=transaction.address,
-                    meter_start=transaction.meter_start,
-                    meter_stop=transaction.meter_stop,
-                    charge_point=transaction.charge_point,
-                    created_at=transaction.created_at,
-                    updated_at=transaction.updated_at
-                ).dict()
-        if event.action in [Action.StartTransaction]:
-            async with get_contextual_session() as session:
-                transaction = await get_transaction(session, event.transaction_id)
-                data.meta = Transaction(
-                    id=transaction.id,
-                    city=transaction.city,
-                    vehicle=transaction.vehicle,
-                    address=transaction.address,
-                    meter_start=transaction.meter_start,
-                    meter_stop=transaction.meter_stop,
-                    charge_point=transaction.charge_point,
-                    created_at=transaction.created_at,
-                    updated_at=transaction.updated_at
-                ).dict()
+                data.meta = Transaction.from_orm(transaction).dict()
 
         return SSEvent(data=data)
