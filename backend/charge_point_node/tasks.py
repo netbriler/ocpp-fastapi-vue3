@@ -9,6 +9,7 @@ from websockets.legacy.server import WebSocketServer
 
 from charge_point_node.router import Router
 from core.fields import ConnectionStatus
+from core.queue.publisher import publish
 from manager.models.tasks.boot_notification import BootNotificationTask
 from manager.models.tasks.heartbeat import HeartbeatTask
 from manager.models.tasks.status_notification import StatusNotificationTask
@@ -56,6 +57,7 @@ async def process_task(
     logger.info(f"Got task from manager (task={task})")
     connections = [conn for conn in server.websockets if conn.charge_point_id == task.charge_point_id]
     if not connections:
+        await publish(task.json(), to=task.target_queue, priority=task.priority)
         return
     connection = connections[0]
 
