@@ -8,7 +8,8 @@ services:
     env_file:
       - .env
     ports:
-      - "15673:${RABBITMQ_UI_PORT}"
+      - "${RABBITMQ_PORT}:${RABBITMQ_PORT}"
+      - "${RABBITMQ_UI_PORT}:${RABBITMQ_UI_PORT}"
     environment:
       RABBITMQ_DEFAULT_USER: "${RABBITMQ_USER}"
       RABBITMQ_DEFAULT_PASS: "${RABBITMQ_PASS}"
@@ -26,7 +27,7 @@ services:
     env_file:
       - .env
     ports:
-      - "5433:${DB_PORT}"
+      - "${DB_PORT}:${DB_PORT}"
     environment:
       POSTGRES_USER: "${DB_USER}"
       POSTGRES_PASSWORD: "${DB_PASSWORD}"
