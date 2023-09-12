@@ -7,7 +7,6 @@ from pydantic import BaseModel
 
 import manager.services.charge_points as service
 from charge_point_node.models.authorize import AuthorizeEvent
-from charge_point_node.models.base import BaseEvent
 from charge_point_node.models.boot_notification import BootNotificationEvent
 from charge_point_node.models.heartbeat import HeartbeatEvent
 from charge_point_node.models.meter_values import MeterValuesEvent
@@ -26,16 +25,6 @@ from manager.views.transactions import Transaction
 class ConnectionMetaData(BaseModel):
     count: StatusCount
 
-
-class HearbeatMetadata(BaseModel):
-    pass
-
-
-class StatusNotificationMetadata(BaseModel):
-    pass
-
-class StartTransactionMetadata(BaseModel):
-    pass
 
 class SSEventData(BaseModel):
     charge_point_id: str
@@ -74,10 +63,6 @@ class Redactor:
                 data.meta = ConnectionMetaData(
                     count=StatusCount(**await service.get_statuses_counts(session, account_id))
                 ).dict()
-        if event.action in [Action.StatusNotification]:
-            data.meta = StatusNotificationMetadata().dict()
-        if event.action in [Action.Heartbeat]:
-            data.meta = HearbeatMetadata().dict()
         if event.action in [Action.StopTransaction, Action.StartTransaction]:
             async with get_contextual_session() as session:
                 transaction = await get_transaction(session, event.transaction_id)
