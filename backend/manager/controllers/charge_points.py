@@ -94,4 +94,4 @@ async def delete_charge_point(
 ):
         async with get_contextual_session() as session:
             await remove_charge_point(session, charge_point_id)
-        await session.commit()
+            await session.commit()
