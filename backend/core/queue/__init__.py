@@ -6,8 +6,6 @@ from loguru import logger
 from core.settings import (
     TASKS_QUEUE_NAME,
     EVENTS_QUEUE_NAME,
-    TASKS_EXCHANGE_NAME,
-    EVENTS_EXCHANGE_NAME,
     RABBITMQ_USER,
     RABBITMQ_PASS,
     RABBITMQ_PORT,
@@ -17,10 +15,7 @@ from core.settings import (
 _connection: AbstractRobustConnection | None = None
 _tasks_channel: AbstractRobustChannel | None = None
 _events_channel: AbstractRobustChannel | None = None
-_exchanges = {
-    EVENTS_EXCHANGE_NAME: None,
-    TASKS_EXCHANGE_NAME: None
-}
+_exchanges = {}
 
 async def get_connection(
         user=RABBITMQ_USER,
@@ -75,5 +70,5 @@ async def get_exchange(
     global _exchanges
 
     if not _exchanges[name]:
-        _exchanges[name] = await channel.declare_exchange(name, aio_pika.ExchangeType.FANOUT)
+        _exchanges[name] = await channel.declare_exchange(name=name, type=aio_pika.abc.ExchangeType.FANOUT)
     return _exchanges[name]
