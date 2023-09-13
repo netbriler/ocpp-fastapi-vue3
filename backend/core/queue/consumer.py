@@ -29,7 +29,7 @@ async def start_consume(
         raise Exception("Could not declare exchange.")
 
     await channel.set_qos(prefetch_count=prefetch_count)
-    queue = await channel.declare_queue(queue_name, durable=True, exclusive=True)
+    queue = await channel.declare_queue(exclusive=True)
     await queue.bind(exchange)
 
     async def parse_message(message: AbstractIncomingMessage) -> Dict:
