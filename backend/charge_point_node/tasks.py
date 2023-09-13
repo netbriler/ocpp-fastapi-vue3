@@ -57,7 +57,6 @@ async def process_task(
     logger.info(f"Got task from manager (task={task})")
     connections = [conn for conn in server.websockets if conn.charge_point_id == task.charge_point_id]
     if not connections:
-        await publish(task.json(), to=task.target_queue, priority=task.priority)
         return
     connection = connections[0]
 
