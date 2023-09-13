@@ -69,6 +69,6 @@ async def get_exchange(
 ) -> AbstractExchange:
     global _exchanges
 
-    if not _exchanges[name]:
+    if not _exchanges.get(name):
         _exchanges[name] = await channel.declare_exchange(name=name, type=aio_pika.abc.ExchangeType.FANOUT)
     return _exchanges[name]
