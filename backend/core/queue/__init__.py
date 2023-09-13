@@ -4,8 +4,8 @@ from aio_pika.abc import AbstractRobustChannel, AbstractRobustConnection, Abstra
 from loguru import logger
 
 from core.settings import (
-    TASKS_QUEUE_NAME,
-    EVENTS_QUEUE_NAME,
+    TASKS_EXCHANGE_NAME,
+    EVENTS_EXCHANGE_NAME,
     RABBITMQ_USER,
     RABBITMQ_PASS,
     RABBITMQ_PORT,
@@ -49,14 +49,14 @@ async def get_connection(
 
 async def get_channel(
         connection: AbstractRobustConnection,
-        queue: str
+        exchange_name: str
 ) -> AbstractRobustChannel:
-    if queue == TASKS_QUEUE_NAME:
+    if exchange_name == TASKS_EXCHANGE_NAME:
         global _tasks_channel
         if not _tasks_channel:
             _tasks_channel = await connection.channel()
         return _tasks_channel
-    if queue == EVENTS_QUEUE_NAME:
+    if exchange_name == EVENTS_EXCHANGE_NAME:
         global _events_channel
         if not _events_channel:
             _events_channel = await connection.channel()
@@ -65,10 +65,13 @@ async def get_channel(
 
 async def get_exchange(
         channel: AbstractRobustChannel,
-        name: str
+        exchange_name: str
 ) -> AbstractExchange:
     global _exchanges
 
-    if not _exchanges.get(name):
-        _exchanges[name] = await channel.declare_exchange(name=name, type=aio_pika.abc.ExchangeType.FANOUT)
-    return _exchanges[name]
+    if not _exchanges.get(exchange_name):
+        _exchanges[exchange_name] = await channel.declare_exchange(
+            name=exchange_name,
+            type=aio_pika.abc.ExchangeType.FANOUT
+        )
+    return _exchanges[exchange_name]

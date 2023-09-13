@@ -4,7 +4,7 @@ from loguru import logger
 
 from core.database import get_contextual_session
 from core.queue.consumer import start_consume
-from core.settings import EVENTS_QUEUE_NAME
+from core.settings import EVENTS_EXCHANGE_NAME
 from manager import app
 from manager.controllers.accounts import accounts_router
 from manager.controllers.charge_points import charge_points_router
@@ -23,7 +23,7 @@ async def startup():
     # Save a reference to the result of this function, to avoid a task disappearing mid-execution.
     # The event loop only keeps weak references to tasks.
     task = asyncio.create_task(
-        start_consume(queue_name=EVENTS_QUEUE_NAME, on_message=process_event)
+        start_consume(exchange_name=EVENTS_EXCHANGE_NAME, on_message=process_event)
     )
     background_tasks.add(task)
 

@@ -26,7 +26,7 @@ async def on_status_notification(
         message_id=message_id,
         payload=CallSecurityEventNotificationPayload(**kwargs)
     )
-    await publish(event.json(), to=event.target_queue, priority=event.priority)
+    await publish(event.json(), to=event.exchange, priority=event.priority)
 
 
 @router.out(Action.SecurityEventNotification)

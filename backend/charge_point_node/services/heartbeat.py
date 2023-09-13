@@ -24,7 +24,7 @@ async def on_heartbeat(
         charge_point_id=charge_point_id,
         message_id=message_id
     )
-    await publish(event.json(), to=event.target_queue, priority=event.priority)
+    await publish(event.json(), to=event.exchange, priority=event.priority)
 
 
 @router.out(Action.Heartbeat)

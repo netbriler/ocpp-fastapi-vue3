@@ -13,7 +13,7 @@ from charge_point_node.router import Router
 from charge_point_node.tasks import process_task
 from core.queue.consumer import start_consume
 from core.queue.publisher import publish
-from core.settings import WS_SERVER_PORT, TASKS_QUEUE_NAME
+from core.settings import WS_SERVER_PORT, TASKS_EXCHANGE_NAME
 
 background_tasks = set()
 router = Router()
@@ -53,7 +53,7 @@ async def on_connect(connection: OCPPWebSocketServerProtocol, path: str):
 
     logger.info(f"Closed connection (charge_point_id={charge_point_id})")
     event = LostConnectionEvent(charge_point_id=charge_point_id)
-    await publish(event.json(), to=event.target_queue, priority=event.priority)
+    await publish(event.json(), to=event.exchange, priority=event.priority)
 
 
 async def main():
@@ -67,7 +67,7 @@ async def main():
     # The event loop only keeps weak references to tasks.
     task = asyncio.create_task(
         start_consume(
-            TASKS_QUEUE_NAME,
+            TASKS_EXCHANGE_NAME,
             on_message=lambda data: process_task(data, server))
     )
     background_tasks.add(task)

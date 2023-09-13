@@ -81,7 +81,7 @@ async def get_counters(account: Account = Depends(get_account)):
 async def disconnect(charge_point_id: str):
     await acquire_lock(charge_point_id)
     task = DisconnectTask(charge_point_id=charge_point_id)
-    await publish(task.json(), to=task.target_queue)
+    await publish(task.json(), to=task.exchange)
 
 
 @charge_points_router.delete(

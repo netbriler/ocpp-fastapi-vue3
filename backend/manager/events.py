@@ -94,7 +94,7 @@ async def process_event(event: Union[
             await update_charge_point(session, charge_point_id=event.charge_point_id, data=data)
 
         if task:
-            await publish(task.json(), to=task.target_queue, priority=task.priority)
+            await publish(task.json(), to=task.exchange, priority=task.priority)
 
         await session.commit()
         logger.info(f"Successfully completed process event={event}")
