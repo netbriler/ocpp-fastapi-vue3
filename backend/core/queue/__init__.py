@@ -1,15 +1,26 @@
+import aio_pika
 from aio_pika import connect_robust
 from aio_pika.abc import AbstractRobustChannel, AbstractRobustConnection, AbstractExchange
 from loguru import logger
 
-from core.settings import TASKS_QUEUE_NAME, EVENTS_QUEUE_NAME, RABBITMQ_USER, RABBITMQ_PASS, RABBITMQ_PORT, \
+from core.settings import (
+    TASKS_QUEUE_NAME,
+    EVENTS_QUEUE_NAME,
+    TASKS_EXCHANGE_NAME,
+    EVENTS_EXCHANGE_NAME,
+    RABBITMQ_USER,
+    RABBITMQ_PASS,
+    RABBITMQ_PORT,
     RABBITMQ_HOST
+)
 
 _connection: AbstractRobustConnection | None = None
 _tasks_channel: AbstractRobustChannel | None = None
 _events_channel: AbstractRobustChannel | None = None
-_direct_exhange: AbstractExchange | None = None
-
+_exchanges = {
+    EVENTS_EXCHANGE_NAME: None,
+    TASKS_EXCHANGE_NAME: None
+}
 
 async def get_connection(
         user=RABBITMQ_USER,
@@ -57,11 +68,12 @@ async def get_channel(
         return _events_channel
 
 
-async def get_exchange(channel: AbstractRobustChannel, queue_name: str) -> AbstractExchange:
-    global _direct_exhange
+async def get_exchange(
+        channel: AbstractRobustChannel,
+        name: str
+) -> AbstractExchange:
+    global _exchanges
 
-    if not _direct_exhange:
-        _direct_exhange = await channel.declare_exchange("direct")
-        queue = await channel.declare_queue(queue_name, durable=True)
-        await queue.bind(_direct_exhange, queue_name)
-    return _direct_exhange
+    if not _exchanges[name]:
+        _exchanges[name] = await channel.declare_exchange(name, aio_pika.ExchangeType.FANOUT)
+    return _exchanges[name]
