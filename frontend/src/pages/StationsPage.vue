@@ -287,10 +287,11 @@ const headers = [
   },
 ];
 
-const refreshStation = (id) => {
+const refreshStation = ({ id, status }) => {
   items.value.forEach((item) => {
     if (item.id === id) {
       item.updated_at = new Date().toISOString();
+      item.status = status !== undefined ? status : item.status;
     }
   });
 };
@@ -298,9 +299,10 @@ const refreshStation = (id) => {
 const processSSE = (event) => {
   console.log(`Start process event for stations (event=${event.name}.)`);
   if (event.name === EVENT_NAMES.heartbeat) {
-    refreshStation(event.charge_point_id);
-  } else {
-    fetchData();
+    refreshStation({ id: event.charge_point_id });
+  }
+  if (event.name === EVENT_NAMES.status_notification) {
+    refreshStation({ id: event.charge_point_id, status: event.meta.status });
   }
 };
 

@@ -18,7 +18,7 @@ from charge_point_node.models.stop_transaction import StopTransactionEvent
 from core.database import get_contextual_session
 from core.fields import ConnectionStatus
 from manager.services.transactions import get_transaction
-from manager.views.charge_points import StatusCount
+from manager.views.charge_points import StatusCount, SimpleChargePoint
 from manager.views.transactions import Transaction
 
 
@@ -63,6 +63,10 @@ class Redactor:
                 data.meta = ConnectionMetaData(
                     count=StatusCount(**await service.get_statuses_counts(session, account_id))
                 ).dict()
+        if event.action in [Action.StatusNotification]:
+            async with get_contextual_session() as session:
+                charge_point = await service.get_charge_point(session, event.charge_point_id)
+                data.meta = SimpleChargePoint.from_orm(charge_point).dict()
         if event.action in [Action.StopTransaction, Action.StartTransaction]:
             async with get_contextual_session() as session:
                 transaction = await get_transaction(session, event.transaction_id)
