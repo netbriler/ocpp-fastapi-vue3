@@ -1,3 +1,5 @@
+from loguru import logger
+
 from manager.models.tasks.start_transaction import StartTransactionTask
 from manager.services.charge_points import get_charge_point
 from manager.views.transactions import CreateTransactionView
@@ -9,6 +11,7 @@ async def process_start_transaction(
         session,
         event: StartTransactionEvent
 ) -> StartTransactionTask:
+    logger.info(f"Start process StartTransaction (event={event})")
     charge_point = await get_charge_point(session, event.charge_point_id)
     view = CreateTransactionView(
         city=charge_point.location.city,
