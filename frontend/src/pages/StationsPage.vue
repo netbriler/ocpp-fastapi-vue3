@@ -300,10 +300,13 @@ const processSSE = (event) => {
   console.log(`Start process event for stations (event=${event.name}.)`);
   if (event.name === EVENT_NAMES.heartbeat) {
     refreshStation({ id: event.charge_point_id });
+    return;
   }
   if (event.name === EVENT_NAMES.status_notification) {
     refreshStation({ id: event.charge_point_id, status: event.meta.status });
+    return;
   }
+  fetchData();
 };
 
 onMounted(() => {

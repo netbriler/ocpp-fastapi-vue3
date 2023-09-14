@@ -40,7 +40,7 @@ services:
 
   manager:
     container_name: csms-manager
-    build: .
+    image: heroyooki/ocpp:latest
     volumes:
       - ./backend:/usr/src/csms/backend
     ports:
@@ -64,7 +64,7 @@ services:
   charge_point_node:
     container_name: charge_point_node
     restart: always
-    build: .
+    image: heroyooki/ocpp:latest
     volumes:
       - ./backend:/usr/src/csms/backend
     ports:
