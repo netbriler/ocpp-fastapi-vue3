@@ -29,9 +29,6 @@
     -  "manager" prepares "task" and puts it into the queue
     -  "charge point node" consumes "task" and executes the one (sends data to the physical charging station)
 
-
-![Screenshot](https://github.com/heroyooki/ocpp-csms/assets/17108549/4ab76f0c-07b4-4d7d-a7a3-06573bfc2199)
-
 Also, explained [in the video](https://www.youtube.com/watch?v=CLE70pABi_U&ab_channel=%D0%94%D0%B5%D0%BD%D0%B8%D1%813)
 
 In the context of the client-server architecture, the csms is a server, the charging station is a client.
