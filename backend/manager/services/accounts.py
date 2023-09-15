@@ -2,6 +2,7 @@ from typing import List
 
 from fastapi import Depends
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_session, get_contextual_session
 from manager.exceptions import NotFound
@@ -11,7 +12,7 @@ from manager.views.accounts import CreateAccountView
 
 async def get_account(
         account_id: str,
-        session=Depends(get_session)
+        session: AsyncSession=Depends(get_session)
 ) -> Account:
     result = await session.execute(
         select(Account).where(Account.id == account_id)
@@ -19,6 +20,7 @@ async def get_account(
     account = result.scalars().first()
     if not account:
         raise NotFound(detail="Given account does not exist.")
+    await session.close()
     return account
 
 

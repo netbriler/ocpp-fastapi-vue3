@@ -15,4 +15,6 @@ async def get_counters(account_id: str):
                 "WHERE cp.is_active = 't' AND l.account_id = '{account_id}') as stations;" \
             .format(account_id=account_id)
         result = await session.execute(text(query))
-        return result.fetchone()
+        counters = result.fetchone()
+        await session.close()
+        return counters

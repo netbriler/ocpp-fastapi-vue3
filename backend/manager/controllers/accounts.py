@@ -20,4 +20,6 @@ accounts_router = APIRouter(
 )
 async def retrieve_accounts() -> List[Account]:
     async with get_contextual_session() as session:
-        return await list_accounts(session)
+        accounts = await list_accounts(session)
+        await session.close()
+        return accounts

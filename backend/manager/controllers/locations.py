@@ -26,7 +26,9 @@ async def retrieve_simple_locations(
         account: Account = Depends(get_account)
 ) -> List[Location]:
     async with get_contextual_session() as session:
-        return await list_simple_locations(session, account.id)
+        locations = await list_simple_locations(session, account.id)
+        await session.close()
+        return locations
 
 
 @locations_router.get("/", status_code=status.HTTP_200_OK)
@@ -46,6 +48,7 @@ async def retrieve_locations(
             location = item[0]
             location.charge_points_count = item[1]
             locations.append(location)
+        await session.close()
         return PaginatedLocationsView(
             items=locations,
             pagination=pagination
@@ -64,6 +67,7 @@ async def add_location(
     async with get_contextual_session() as session:
         location = await create_location(session, account.id, data)
         await session.commit()
+        await session.close()
         return location
 
 
@@ -78,3 +82,4 @@ async def delete_location(
     async with get_contextual_session() as session:
         await remove_location(session, location_id)
         await session.commit()
+        await session.close()

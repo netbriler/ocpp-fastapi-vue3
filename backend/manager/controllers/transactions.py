@@ -31,6 +31,7 @@ async def list_transactions(
             lambda: build_transactions_query(account, search),
             *params
         )
+        await session.close()
         return PaginatedTransactionsView(
             items=[item[0] for item in items],
             pagination=pagination

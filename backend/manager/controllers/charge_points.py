@@ -49,6 +49,7 @@ async def list_charge_points(
             lambda: build_charge_points_query(account, search),
             *params
         )
+        await session.close()
         return PaginatedChargePointsView(items=[item[0] for item in items], pagination=pagination)
 
 
@@ -63,7 +64,7 @@ async def add_charge_point(
     async with get_contextual_session() as session:
         await create_charge_point(session, data)
         await session.commit()
-
+        await session.close()
 
 @charge_points_router.get(
     "/{account_id}/charge_points/counters",
@@ -72,7 +73,9 @@ async def add_charge_point(
 )
 async def get_counters(account: Account = Depends(get_account)):
     async with get_contextual_session() as session:
-        return await get_statuses_counts(session, account.id)
+        counters = await get_statuses_counts(session, account.id)
+        await session.close()
+        return counters
 
 
 @charge_points_router.patch(
@@ -96,3 +99,4 @@ async def delete_charge_point(
         async with get_contextual_session() as session:
             await remove_charge_point(session, charge_point_id)
             await session.commit()
+            await session.close()
