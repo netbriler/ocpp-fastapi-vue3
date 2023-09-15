@@ -306,7 +306,12 @@ const processSSE = (event) => {
     refreshStation({ id: event.charge_point_id, status: event.meta.status });
     return;
   }
-  fetchData();
+  if (event.name === EVENT_NAMES.lost_connection) {
+    refreshStation({
+      id: event.charge_point_id,
+      status: STATION_STATUS.unavailable,
+    });
+  }
 };
 
 onMounted(() => {
