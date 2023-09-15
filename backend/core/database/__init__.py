@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker
 
 from core import settings
 
-engine = create_async_engine(settings.DATABASE_ASYNC_URL, echo=True)
+engine = create_async_engine(settings.DATABASE_ASYNC_URL, echo=True, pool_size=20, max_overflow=0)
 asession = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
@@ -20,7 +20,7 @@ async def get_session() -> AsyncSession:
 
 
 @asynccontextmanager
-async def get_contextual_session():
+async def get_contextual_session() -> AsyncSession:
     async with asession() as session:
         yield session
 

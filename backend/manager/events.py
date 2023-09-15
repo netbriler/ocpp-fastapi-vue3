@@ -97,6 +97,7 @@ async def process_event(event: Union[
             await publish(task.json(), to=task.exchange, priority=task.priority)
 
         await session.commit()
+        await session.close()
         logger.info(f"Successfully completed process event={event}")
 
         return event

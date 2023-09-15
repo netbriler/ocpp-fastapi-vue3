@@ -58,18 +58,18 @@ class Redactor:
             name=event.action
         )
         # Note: there is a list ALLOWED_SERVER_SIDE_EVENTS in the settings
-        if event.action in [ConnectionStatus.LOST_CONNECTION]:
-            async with get_contextual_session() as session:
+        async with get_contextual_session() as session:
+            if event.action in [ConnectionStatus.LOST_CONNECTION]:
                 data.meta = ConnectionMetaData(
                     count=StatusCount(**await service.get_statuses_counts(session, account_id))
                 ).dict()
-        if event.action in [Action.StatusNotification]:
-            async with get_contextual_session() as session:
+            if event.action in [Action.StatusNotification]:
                 charge_point = await service.get_charge_point(session, event.charge_point_id)
                 data.meta = SimpleChargePoint.from_orm(charge_point).dict()
-        if event.action in [Action.StopTransaction, Action.StartTransaction]:
-            async with get_contextual_session() as session:
+            if event.action in [Action.StopTransaction, Action.StartTransaction]:
                 transaction = await get_transaction(session, event.transaction_id)
                 data.meta = Transaction.from_orm(transaction).dict()
+
+            await session.close()
 
         return SSEvent(data=data)
