@@ -31,6 +31,7 @@ async def authenticate(charge_point_id: str, data: AuthData | None = None):
         charge_point = await get_charge_point(session, charge_point_id)
         if not charge_point:
             raise HTTPException(status.HTTP_401_UNAUTHORIZED)
+        await session.close()
 
 
 @charge_points_router.get(
