@@ -9,9 +9,9 @@ export const EVENT_NAMES = {
 };
 
 export const STATION_STATUS = {
-  available: "available",
-  unavailable: "unavailable",
-  faulted: "faulted",
+  available: "Available",
+  unavailable: "Unavailable",
+  faulted: "Faulted",
 };
 
 export const TRANSACTION_STATUS = {
