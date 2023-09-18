@@ -1,3 +1,5 @@
+from ocpp.v16.enums import AuthorizationStatus
+
 from manager.models.tasks.stop_transaction import StopTransactionTask
 from manager.services.transactions import update_transaction
 from manager.views.transactions import UpdateTransactionView
@@ -17,5 +19,5 @@ async def process_stop_transaction(
     return StopTransactionTask(
         message_id=event.message_id,
         charge_point_id=event.charge_point_id,
-        id_tag_info={}
+        id_tag_info={"status": AuthorizationStatus.accepted.value}
     )

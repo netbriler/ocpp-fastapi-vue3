@@ -1,5 +1,7 @@
 from loguru import logger
 
+from ocpp.v16.enums import AuthorizationStatus
+
 from manager.models.tasks.start_transaction import StartTransactionTask
 from manager.services.charge_points import get_charge_point
 from manager.views.transactions import CreateTransactionView
@@ -28,5 +30,5 @@ async def process_start_transaction(
         message_id=event.message_id,
         charge_point_id=event.charge_point_id,
         transaction_id=transaction.transaction_id,
-        id_tag_info={}
+        id_tag_info={"status": AuthorizationStatus.accepted.value}
     )
