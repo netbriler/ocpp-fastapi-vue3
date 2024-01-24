@@ -42,7 +42,7 @@ export default ({ mode }) => {
     },
     server: {
       hmr: {
-        port: 5000,
+        port: 5001,
         protocol: "ws",
       },
     },

@@ -22,7 +22,7 @@ class ApiClient:
     def get_uri(self, endpoint: str) -> str:
         host = self.host.rstrip("/")
         endpoint = endpoint.lstrip('/')
-        return f"{host}:{self.port}/{endpoint}"
+        return f"{host}:{self.port}/api/{endpoint}"
 
     async def post(self, endpoint: str, data=None):
         uri = self.get_uri(endpoint)

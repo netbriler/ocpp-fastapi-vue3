@@ -40,11 +40,13 @@ services:
 
   manager:
     container_name: csms-manager
-    image: heroyooki/ocpp:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     volumes:
       - ./backend:/usr/src/csms/backend
     ports:
-      - "${HTTP_SERVER_PORT}:${HTTP_SERVER_PORT}"
+      - "8001:${HTTP_SERVER_PORT}"
     env_file:
       - .env
     networks:
@@ -52,7 +54,7 @@ services:
     restart: always
     command: >
       sh -c "cd /usr/src/csms/backend && alembic upgrade head &&
-             uvicorn manager.main:app --host 0.0.0.0 --port ${HTTP_SERVER_PORT} --reload"
+             uvicorn manager.main:app --host 0.0.0.0 --port 8001 --reload"
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -60,25 +62,27 @@ services:
         condition: service_healthy
     healthcheck:
       test: "exit 0"
-
-  charge_point_node:
-    container_name: charge_point_node
-    restart: always
-    image: heroyooki/ocpp:latest
-    volumes:
-      - ./backend:/usr/src/csms/backend
-    ports:
-      - "${WS_SERVER_PORT}:${WS_SERVER_PORT}"
-    env_file:
-      - .env
-    command: > 
-      sh -c "cd /usr/src/csms/backend && 
-             watchmedo auto-restart --pattern '*.py' --recursive --signal SIGTERM python charge_point_node/main.py"
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - app-network
+#
+#  charge_point_node:
+#    container_name: charge_point_node
+#    restart: always
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    volumes:
+#      - ./backend:/usr/src/csms/backend
+#    ports:
+#      - "${WS_SERVER_PORT}:${WS_SERVER_PORT}"
+#    env_file:
+#      - .env
+#    command: >
+#      sh -c "cd /usr/src/csms/backend &&
+#             watchmedo auto-restart --pattern '*.py' --recursive --signal SIGTERM python charge_point_node/main.py"
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - app-network
 
   frontend:
     container_name: frontend
@@ -87,26 +91,28 @@ services:
     volumes:
       - ./frontend:/usr/src/csms/frontend
     ports:
-      - "${UI_SERVER_PORT}:${UI_SERVER_PORT}"
+      - "5001:${UI_SERVER_PORT}"
     networks:
       - app-network
     command: >
       sh -c "cd /usr/src/csms/frontend && 
-             yarn install && yarn dev --port ${UI_SERVER_PORT} --host 0.0.0.0"
+             yarn install && yarn dev --port 5001 --host 0.0.0.0"
     depends_on:
       manager:
         condition: service_healthy
+    env_file:
+      - .env
 
   nginx:
-      image: nginx:1.24.0-bullseye
-      ports:
-        - "80:80"
-      volumes:
-        - ./conf:/etc/nginx/conf.d
-      depends_on:
-        - frontend
-      networks:
-        - app-network
+    image: nginx:1.24.0-bullseye
+    ports:
+      - "80:80"
+    volumes:
+      - ./conf:/etc/nginx/conf.d
+    depends_on:
+      - frontend
+    networks:
+      - app-network
 
 networks:
   app-network:

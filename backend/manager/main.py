@@ -1,5 +1,6 @@
 import asyncio
 
+from fastapi import APIRouter
 from loguru import logger
 
 from core.database import get_contextual_session
@@ -11,8 +12,8 @@ from manager.controllers.charge_points import charge_points_router
 from manager.controllers.common import common_router
 from manager.controllers.locations import locations_router
 from manager.controllers.transactions import transaction_router
-from manager.services.accounts import list_accounts
 from manager.events import process_event
+from manager.services.accounts import list_accounts
 from sse.controllers import stream_router
 
 background_tasks = set()
@@ -32,9 +33,16 @@ async def startup():
         logger.info(f"Started up application with accounts = ({accounts}).")
 
 
-app.include_router(accounts_router)
-app.include_router(common_router)
-app.include_router(stream_router)
-app.include_router(charge_points_router)
-app.include_router(locations_router)
-app.include_router(transaction_router)
+router = APIRouter(
+    prefix="/api",
+    tags=["api"],
+)
+
+router.include_router(accounts_router)
+router.include_router(common_router)
+router.include_router(stream_router)
+router.include_router(charge_points_router)
+router.include_router(locations_router)
+router.include_router(transaction_router)
+
+app.include_router(router)

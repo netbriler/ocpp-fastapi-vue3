@@ -1,7 +1,7 @@
 import axios from "axios";
 import router from "@/router";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8001";
 
 export function request(
   path,
@@ -24,6 +24,8 @@ export function request(
   } = {}
 ) {
   let url = API_URL + (path.startsWith("/") ? path : `/${path}`);
+  console.log(url);
+  url = url.replace(/\/undefined/g, "");
   return axios({
     url,
     method: "get",

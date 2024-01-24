@@ -7,6 +7,10 @@ from ocpp.v16.enums import Action
 
 from core.fields import ConnectionStatus
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 DEBUG = os.environ.get("DEBUG") == "1"
 
 RABBITMQ_PORT = os.environ["RABBITMQ_PORT"]
