@@ -47,6 +47,8 @@ def upgrade() -> None:
 
     account_id = str(uuid4())
     op.execute(f"INSERT INTO accounts (id, name, is_active) VALUES ('{account_id}', 'main', 't');")
+    op.execute(f"INSERT INTO locations (id, account_id, name, city, address1, is_active) "
+               f"VALUES ('default', '{account_id}', 'Random location', 'Random city', 'Random address', 't');")
     # ### end Alembic commands ###
 
 

@@ -1,12 +1,11 @@
 from typing import Tuple
 
-from fastapi import APIRouter, HTTPException, status, Depends
-from sqlalchemy import delete
+from fastapi import APIRouter, status, Depends
 from loguru import logger
 
 from core.database import get_contextual_session
 from core.queue.publisher import publish
-from manager.models import AuthData, Account, ChargePoint
+from manager.models import AuthData, Account
 from manager.models.tasks.connections import DisconnectTask
 from manager.services.accounts import get_account
 from manager.services.charge_points import (
@@ -29,8 +28,21 @@ async def authenticate(charge_point_id: str, data: AuthData | None = None):
     logger.info(f"Start authenticate charge point (id={charge_point_id})")
     async with get_contextual_session() as session:
         charge_point = await get_charge_point(session, charge_point_id)
+        # if not charge_point:
+        #     raise HTTPException(status.HTTP_401_UNAUTHORIZED)
         if not charge_point:
-            raise HTTPException(status.HTTP_401_UNAUTHORIZED)
+            data = CreateChargPointView(
+                location_id='default',
+                id=charge_point_id,
+                manufacturer='Unknown manufacturer',
+                serial_number='Unknown serial number',
+                model='Unknown model',
+                password='',
+                comment='comment'
+            )
+
+            await create_charge_point(session, data)
+            await session.commit()
         await session.close()
 
 
@@ -66,6 +78,7 @@ async def add_charge_point(
         await session.commit()
         await session.close()
 
+
 @charge_points_router.get(
     "/{account_id}/charge_points/counters",
     status_code=status.HTTP_200_OK,
@@ -96,7 +109,7 @@ async def delete_charge_point(
         charge_point_id: str,
         account: Account = Depends(get_account),
 ):
-        async with get_contextual_session() as session:
-            await remove_charge_point(session, charge_point_id)
-            await session.commit()
-            await session.close()
+    async with get_contextual_session() as session:
+        await remove_charge_point(session, charge_point_id)
+        await session.commit()
+        await session.close()
