@@ -49,7 +49,7 @@ async def watch(connection: OCPPWebSocketServerProtocol):
 
 async def on_connect(connection, path: str):
     charge_point_id = path.split("/")[-1].strip("/")
-    connection.charge_point_id = charge_point_id + "1"
+    connection.charge_point_id = charge_point_id
     logger.info(f"New charge point connected (charge_point_id={charge_point_id})")
 
     response = await api_client.post(f"/charge_points/{charge_point_id}")
