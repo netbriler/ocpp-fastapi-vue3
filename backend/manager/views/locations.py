@@ -19,7 +19,7 @@ class SimpleLocation(BaseModel):
 
 
 class LocationView(BaseModel):
-    id: UUID
+    id: str
     name: str
     city: str
     address1: str
