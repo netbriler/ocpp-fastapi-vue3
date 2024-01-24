@@ -1,6 +1,7 @@
+from time import time
 from typing import Tuple
 
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, HTTPException
 from loguru import logger
 
 from core.database import get_contextual_session
@@ -35,8 +36,8 @@ async def authenticate(charge_point_id: str, data: AuthData | None = None):
                 location_id='default',
                 id=charge_point_id,
                 manufacturer='Unknown manufacturer',
-                serial_number='Unknown serial number',
-                model='Unknown model',
+                serial_number=f'{charge_point_id}{time()}',
+                model=f'Unknown model{time()}',
                 password='',
                 comment='comment'
             )

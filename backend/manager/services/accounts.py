@@ -19,6 +19,11 @@ async def get_account(
     )
     account = result.scalars().first()
     if not account:
+        result = await session.execute(
+            select(Account)
+        )
+        account = result.scalars().first()
+    if not account:
         raise NotFound(detail="Given account does not exist.")
     await session.close()
     return account
