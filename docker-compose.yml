@@ -62,27 +62,27 @@ services:
         condition: service_healthy
     healthcheck:
       test: "exit 0"
-#
-#  charge_point_node:
-#    container_name: charge_point_node
-#    restart: always
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    volumes:
-#      - ./backend:/usr/src/csms/backend
-#    ports:
-#      - "${WS_SERVER_PORT}:${WS_SERVER_PORT}"
-#    env_file:
-#      - .env
-#    command: >
-#      sh -c "cd /usr/src/csms/backend &&
-#             watchmedo auto-restart --pattern '*.py' --recursive --signal SIGTERM python charge_point_node/main.py"
-#    depends_on:
-#      rabbitmq:
-#        condition: service_healthy
-#    networks:
-#      - app-network
+
+  charge_point_node:
+    container_name: charge_point_node
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/usr/src/csms/backend
+    ports:
+      - "${WS_SERVER_PORT}:${WS_SERVER_PORT}"
+    env_file:
+      - .env
+    command: >
+      sh -c "cd /usr/src/csms/backend &&
+             watchmedo auto-restart --pattern '*.py' --recursive --signal SIGTERM python charge_point_node/main.py"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - app-network
 
   frontend:
     container_name: frontend
