@@ -49,6 +49,8 @@ async def watch(connection: OCPPWebSocketServerProtocol):
 
 async def on_connect(connection, path: str):
     charge_point_id = path.split("/")[-1].strip("/")
+    if not charge_point_id:
+        charge_point_id = f'No-id-provided-{id(connection)}'
     connection.charge_point_id = charge_point_id
     logger.info(f"New charge point connected (charge_point_id={charge_point_id})")
 
